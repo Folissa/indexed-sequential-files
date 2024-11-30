@@ -29,10 +29,10 @@ void print_invalid_input_message(int invalid_format) {
     }
 }
 
-void load_operations_from_file(tape_t *indexes, tape_t *data) {
+void load_operations_from_file(indexes_t *indexes, data_t *data) {
 }
 
-void input_operations_from_keyboard(tape_t *indexes, tape_t *data) {
+void input_operations_from_keyboard(indexes_t *indexes, data_t *data) {
     clear_input_buffer();
     char input[INPUT_BUFFER_SIZE];
     int exit = 0;
@@ -54,10 +54,11 @@ void input_operations_from_keyboard(tape_t *indexes, tape_t *data) {
             print_help();
             continue;
         } else if (strcmp(command, "INSERT") == 0) {
-            int key, value1, value2, value3;
-            char *args = strtok(NULL, ""); // Get the rest of the input after "INSERT"
-            if (args != NULL && sscanf(args, "%d %d %d %d", &key, &value1, &value2, &value3) == 4) {
-                insert_record(indexes, data);
+            int key, mass, specific_heat_capacity, temperature_change;
+            char *args = strtok(NULL, "");
+            if (args != NULL && sscanf(args, "%d %d %d %d", &key, &mass, &specific_heat_capacity, &temperature_change) == 4) {
+                record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change);
+                insert_record(indexes, data, record);
             } else {
                 print_invalid_input_message(1);
             }
@@ -66,7 +67,7 @@ void input_operations_from_keyboard(tape_t *indexes, tape_t *data) {
             int key;
             char *args = strtok(NULL, "");
             if (args != NULL && sscanf(args, "%d", &key) == 1) {
-                get_record(indexes, data);
+                get_record(indexes, data, key);
             } else {
                 print_invalid_input_message(1);
             }

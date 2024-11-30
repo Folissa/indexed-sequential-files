@@ -1,11 +1,10 @@
-#pragma once
-
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "input.h"
-#include "tape.h"
+#include "indexes.h"
+#include "data.h"
 
 // TODO: Record insert
 // TODO: Record read
@@ -18,8 +17,8 @@
 int main() {
     int records_count = 0;
 
-    tape_t *indexes = create_tape(INDEXES_FILENAME);
-    tape_t *data = create_tape(DATA_FILENAME);
+    indexes_t *indexes = create_indexes(INDEXES_FILENAME);
+    data_t *data = create_data(DATA_FILENAME);
 
     int exit = 0;
     int choice;
@@ -45,7 +44,7 @@ int main() {
         }
     };
 
-    destroy_tape(indexes);
-    destroy_tape(data);
+    destroy_indexes(indexes);
+    destroy_data(data);
     return 0;
 }
