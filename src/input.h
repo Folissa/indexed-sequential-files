@@ -16,17 +16,22 @@ void print_prompt();
 // Clear input buffer.
 void clear_input_buffer();
 
-// Input records from the user.
-void input_records();
-
-void load_operations_from_file();
+//
+void clear_input_array(char *input, size_t size);
 
 //
-void input_operations_from_keyboard();
+void print_help();
+
+//
+void print_invalid_input_message(int invalid_format);
+
+//
+void load_operations_from_file(tape_t *indexes, tape_t *data);
+
+//
+void input_operations_from_keyboard(tape_t *indexes, tape_t *data);
 
 // Prints a menu with input options to choose from.
 void print_menu();
-
-void choose_program_mode();
 
 #endif // INPUT_H
