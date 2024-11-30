@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "*.tcc": "c",
+        "list": "c",
+        "stdlib.h": "c",
+        "constants.h": "c",
+        "chrono": "c",
+        "text_encoding": "c",
+        "typeinfo": "c",
+        "algorithm": "c",
+        "format": "c",
+        "variant": "c",
+        "random": "c",
+        "main.h": "c",
+        "cstdlib": "c",
+        "memory_resource": "c",
+        "memory": "c",
+        "*.h": "c",
+        "functional": "c"
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/clang"
+}
