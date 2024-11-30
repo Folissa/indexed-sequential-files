@@ -4,7 +4,7 @@ indexes_page_t *create_indexes_page() {
     indexes_page_t *page = (indexes_page_t *)malloc(sizeof(indexes_page_t));
     initialize_indexes_page(page);
     for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++) {
-        page->indexes[i] = create_index();
+        page->indexes[i] = create_index(DEFAULT_VALUE, DEFAULT_VALUE);
     }
     return page;
 }

@@ -19,3 +19,98 @@ void destroy_indexes(indexes_t *indexes) {
     destroy_indexes_page(indexes->page);
     free(indexes);
 }
+
+void handle_full_indexes_page(indexes_t *indexes, int write, int read) {
+    if (is_indexes_page_full(*(indexes->page))) {
+        if (write)
+            write_indexes_page(indexes);
+        indexes->page_index++;
+        indexes->page->index_index = 0;
+        if (read)
+            read_indexes_page(indexes);
+    }
+}
+
+void write_index(FILE *file, index_t *index, int index_index) {
+    int index_size = INDEX_PARAMETERS_COUNT * INT_WIDTH;
+    long int index_offset = index_index * index_size;
+    if (fseek(file, index_offset, SEEK_SET) != 0) {
+        perror("Error seeking in file");
+        return;
+    }
+    fprintf(file, "%0*d%0*d",
+        INT_WIDTH, index->data_page_index,
+        INT_WIDTH, index->key);
+}
+
+void write_indexes_page(indexes_t *indexes) {
+    FILE *file = open_file(indexes->filename, "r+");
+    for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++) {
+        int index_index = indexes->page_index * INDEXES_COUNT_PER_PAGE + i;
+        if (!index_exists(indexes->page->indexes[i]))
+            break;
+        write_index(file, indexes->page->indexes[i], index_index);
+        initialize_index(indexes->page->indexes[i], DEFAULT_VALUE, DEFAULT_VALUE);
+    }
+    close_file(file);
+    (indexes->writes)++;
+}
+
+void read_index(indexes_t *indexes, char *buffer, int index_index) {
+    int index_size = INDEX_PARAMETERS_COUNT * INT_WIDTH;
+    int index_offset = index_index * index_size;
+    if (buffer[index_offset] == '\0') {
+        // Situation: there are indexes to read, but it will not fill the whole page,
+        // so we initalize as they do not exist
+        initialize_index(indexes->page->indexes[index_index], DEFAULT_VALUE, DEFAULT_VALUE);
+        return;
+    }
+    char temp[INT_WIDTH + NULL_CHARACTER_SIZE];
+    temp[INT_WIDTH] = '\0';
+    memcpy(temp, buffer + index_offset + FIRST_PARAMETER_OFFSET * INT_WIDTH, INT_WIDTH);
+    indexes->page->indexes[index_index]->data_page_index = atoi(temp);
+    memcpy(temp, buffer + index_offset + SECOND_PARAMETER_OFFSET * INT_WIDTH, INT_WIDTH);
+    indexes->page->indexes[index_index]->key = atoi(temp);
+}
+
+void read_indexes_page(indexes_t *indexes) {
+    FILE *file = open_file(indexes->filename, "r");
+    
+    int page_index = indexes->page_index;
+    int index_size = INDEX_PARAMETERS_COUNT * INT_WIDTH;
+    int indexes_size = INDEXES_COUNT_PER_PAGE * index_size;
+    long int page_offset = page_index * indexes_size;
+    if (fseek(file, page_offset, SEEK_SET) != 0) {
+        perror("Error seeking in file");
+    }
+    char buffer[indexes_size + NULL_CHARACTER_SIZE];
+    for (int i = 0; i < indexes_size + NULL_CHARACTER_SIZE; i++) {
+        buffer[i] = '\0';
+    }
+    if (fread(buffer, sizeof(char), indexes_size, file)) {
+        for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++)
+            read_index(indexes, buffer, i);
+        (indexes->reads)++;
+
+    } else {
+        // Reached EOF, mark whole page as non existing
+        for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++) {
+            initialize_index(indexes->page->indexes[i], DEFAULT_VALUE, DEFAULT_VALUE);
+        }
+    }
+    close_file(file);
+}
+
+void add_index(indexes_t *indexes, index_t *index) {
+    if (index_exists(indexes->page->indexes[indexes->page->index_index])) {
+        (indexes->page->index_index)++;
+    }
+    handle_full_indexes_page(indexes, 1, 0);
+    copy_index(index, indexes->page->indexes[indexes->page->index_index]);
+}
+
+index_t *get_next(indexes_t *indexes) {
+    indexes->page->index_index++;
+    handle_full_indexes_page(indexes, 0, 1);
+    return indexes->page->indexes[indexes->page->index_index];
+}
