@@ -136,7 +136,7 @@ void move_indexes_to_start(indexes_t *indexes) {
     read_indexes_page(indexes);
 }
 
-record_t *get_current_index(indexes_t *indexes) {
+index_t *get_current_index(indexes_t *indexes) {
     return indexes->page->indexes[indexes->page->index_index];
 }
 

@@ -1,4 +1,3 @@
 build/*
 report/*
-indexes.txt
-data.txt
+*.txt

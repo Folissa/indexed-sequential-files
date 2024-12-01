@@ -71,4 +71,8 @@ void insert_record(indexes_t *indexes, data_t *data, record_t *record);
 //
 void get_record(indexes_t *indexes, data_t *data, int key);
 
+void print_data(data_t *data);
+
+void insert_dummy_data(data_t *data);
+
 #endif // DATA_H

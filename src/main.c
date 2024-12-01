@@ -46,6 +46,9 @@ int main() {
     destroy_record(record);
 #endif // DEBUG
 
+    insert_dummy_data(data);
+    print_data(data);
+
     int exit = 0;
     int choice;
     while (!exit) {

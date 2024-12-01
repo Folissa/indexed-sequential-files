@@ -38,7 +38,8 @@ void write_record(FILE *file, record_t *record, int record_index) {
         perror("Error seeking in file");
         return;
     }
-    fprintf(file, "%0*d%0*d%0*d",
+    fprintf(file, "%0*d%0*d%0*d%0*d",
+        INT_WIDTH, record->key,
         INT_WIDTH, record->mass,
         INT_WIDTH, record->specific_heat_capacity,
         INT_WIDTH, record->temperature_change);
@@ -69,10 +70,12 @@ void read_record(data_t *data, char *buffer, int record_index) {
     char temp[INT_WIDTH + NULL_CHARACTER_SIZE];
     temp[INT_WIDTH] = '\0';
     memcpy(temp, buffer + record_offset + FIRST_PARAMETER_OFFSET * INT_WIDTH, INT_WIDTH);
-    data->page->records[record_index]->mass = atoi(temp);
+    data->page->records[record_index]->key = atoi(temp);
     memcpy(temp, buffer + record_offset + SECOND_PARAMETER_OFFSET * INT_WIDTH, INT_WIDTH);
-    data->page->records[record_index]->specific_heat_capacity = atoi(temp);
+    data->page->records[record_index]->mass = atoi(temp);
     memcpy(temp, buffer + record_offset + THIRD_PARAMETER_OFFSET * INT_WIDTH, INT_WIDTH);
+    data->page->records[record_index]->specific_heat_capacity = atoi(temp);
+    memcpy(temp, buffer + record_offset + FOURTH_PARAMETER_OFFSET * INT_WIDTH, INT_WIDTH);
     data->page->records[record_index]->temperature_change = atoi(temp);
 }
 
@@ -143,9 +146,70 @@ void move_data_to_start(data_t *data) {
     read_data_page(data);
 }
 
-void insert_record(indexes_t *indexes, data_t *data, record_t *record) {
-
+void print_data(data_t *data) {
+    // Remember all the values
+    int temp_page_index = data->page_index;
+    int temp_record_index = data->page->record_index;
+    data_page_t *page = create_data_page();
+    for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
+        copy_record(data->page->records[i], page->records[i]);
+    }
+    int temp_writes = data->writes;
+    int temp_reads = data->reads;
+    // Print out all the records in the data
+    data->page_index = 0;
+    data->page->record_index = 0;
+    read_data_page(data);
+    int index_in_file = 0;
+    record_t *record = get_current_record(data);
+    int current_page_index = -1;
+    printf("----------------------------------------DATA-----------------------------------------\n");
+    while (!is_data_at_end(data)) {
+        if (current_page_index != data->page_index) {
+            printf("----------------------------------------PAGE %02d--------------------------------------\n", data->page_index);
+            current_page_index = data->page_index;
+        }
+        printf("#%02d ", index_in_file);
+        print_record(*record);
+        index_in_file++;
+        record = get_next_record(data);
+    }
+    // Recover all the values
+    data->page_index = temp_page_index;
+    data->page->record_index = temp_record_index;
+    for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
+        copy_record(page->records[i], data->page->records[i]);
+    }
+    data->writes = temp_writes;
+    data->reads = temp_reads;
+    destroy_data_page(page);
 }
 
-void get_record(indexes_t *indexes, data_t * data, int key) {
+void insert_dummy_data(data_t *data) {
+    record_t *record1 = create_record(0, 4234, 3, 10);
+    record_t *record2 = create_record(450, 45, 1000, 31);
+    record_t *record3 = create_record(1000, 12, 2000, 3);
+    // record_t *record3 = create_record(DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE);
+    record_t *record4 = create_record(1200, 100, 54, 12);
+    record_t *record5 = create_record(2000, 76, 2000, 23);
+
+    add_record(data, record1);
+    add_record(data, record2);
+    add_record(data, record3);
+    add_record(data, record4);
+    add_record(data, record5);
+
+    write_data_page(data);
+
+    destroy_index(record1);
+    destroy_index(record2);
+    destroy_index(record3);
+    destroy_index(record4);
+    destroy_index(record5);
+}
+
+void insert_record(indexes_t *indexes, data_t *data, record_t *record) {
+}
+
+void get_record(indexes_t *indexes, data_t *data, int key) {
 }
