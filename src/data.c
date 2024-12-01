@@ -153,9 +153,9 @@ void print_data(data_t *data) {
     // Remember all the values
     int temp_page_index = data->page_index;
     int temp_record_index = data->page->record_index;
-    data_page_t *page = create_data_page();
+    data_page_t *temp_page = create_data_page();
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
-        copy_record(data->page->records[i], page->records[i]);
+        copy_record(data->page->records[i], temp_page->records[i]);
     }
     int temp_writes = data->writes;
     int temp_reads = data->reads;
@@ -163,13 +163,16 @@ void print_data(data_t *data) {
     data->page_index = 0;
     data->page->record_index = 0;
     read_data_page(data);
-    int index_in_file = 0;
     record_t *record = get_current_record(data);
+    int index_in_file = 0;
     int current_page_index = -1;
-    printf("----------------------------------------------------DATA------------------------------------------------------\n");
+    if (data->filename == DATA_FILENAME)
+        printf("----------------------------------------------------DATA------------------------------------------------------\n");
+    else if (data->filename == OVERFLOW_FILENAME)
+        printf("----------------------------------------------------OVERFLOW--------------------------------------------------\n");
     // TODO: There will be empty records in a page. So this functionality and is_data_at_end may break
     // TODO: Fix, so empty records are printed out in the specific way
-    while (!is_data_at_end(data)) {
+    while (!is_data_at_end(data) || data->page->record_index != 0) {
         if (current_page_index != data->page_index) {
             printf("----------------------------------------------------PAGE-%02d---------------------------------------------------\n", data->page_index);
             current_page_index = data->page_index;
@@ -183,11 +186,11 @@ void print_data(data_t *data) {
     data->page_index = temp_page_index;
     data->page->record_index = temp_record_index;
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
-        copy_record(page->records[i], data->page->records[i]);
+        copy_record(temp_page->records[i], data->page->records[i]);
     }
     data->writes = temp_writes;
     data->reads = temp_reads;
-    destroy_data_page(page);
+    destroy_data_page(temp_page);
 }
 
 void insert_dummy_data(data_t *data) {
@@ -213,6 +216,11 @@ void insert_dummy_data(data_t *data) {
 }
 
 void insert_record(indexes_t *indexes, data_t *data, record_t *record) {
+    data->page_index  = find_data_page_index(indexes, record);
+    read_data_page(data);
+    // TODO: Add the page to the overflow based on the recoed key if it needs so
+    add_record(data, record);
+    write_data_page(data);
 }
 
 void get_record(indexes_t *indexes, data_t *data, int key) {

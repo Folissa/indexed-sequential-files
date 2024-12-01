@@ -75,7 +75,7 @@ void print_record(record_t *record) {
         } else
             printf("OVERFLOW_POINTER: %*d\n", INT_WIDTH, record->overflow_pointer);
     } else
-        printf("KEY: %s MASS: %s, SPECIFIC_HEAT_CAPACITY: %s, TEMPERATURE_CHANGE: %s, OVERFLOW_POINTER: %s\n",
+        printf("KEY: %s, MASS: %s, SPECIFIC_HEAT_CAPACITY: %s, TEMPERATURE_CHANGE: %s, OVERFLOW_POINTER: %s\n",
             format,
             format,
             format,

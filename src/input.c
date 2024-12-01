@@ -52,7 +52,6 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data) {
         }
         if (strcmp(command, "HELP") == 0) {
             print_help();
-            continue;
         } else if (strcmp(command, "INSERT") == 0) {
             int key, mass, specific_heat_capacity, temperature_change;
             char *args = strtok(NULL, "");
@@ -62,7 +61,6 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data) {
             } else {
                 print_invalid_input_message(1);
             }
-            continue;
         } else if (strcmp(command, "GET") == 0) {
             int key;
             char *args = strtok(NULL, "");
@@ -71,12 +69,14 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data) {
             } else {
                 print_invalid_input_message(1);
             }
-            continue;
         } else if (strcmp(command, "EXIT") == 0) {
             exit = 1;
+            continue;
         } else {
             print_invalid_input_message(0);
+            continue;
         }
+        print_data(data);
     }
 }
 
