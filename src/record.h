@@ -42,6 +42,6 @@ int record_exists(record_t *record);
 // Copy record values from source to destination.
 void copy_record(record_t *source, record_t *destination);
 
-void print_record(record_t record);
+void print_record(record_t *record);
 
 #endif // RECORD_H

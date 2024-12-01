@@ -49,10 +49,13 @@ void copy_record(record_t *source, record_t *destination) {
     destination->temperature_change = source->temperature_change;
 }
 
-void print_record(record_t record) {
-    printf("KEY: %5d, MASS: %5d, SPECIFIC_HEAT_CAPACITY: %5d, TEMPERATURE_CHANGE: %5d\n",
-        record.key,
-        record.mass,
-        record.specific_heat_capacity,
-        record.temperature_change);
+void print_record(record_t *record) {
+    if (record_exists(record)) {
+        printf("KEY: %5d, MASS: %5d, SPECIFIC_HEAT_CAPACITY: %5d, TEMPERATURE_CHANGE: %5d\n",
+            record->key,
+            record->mass,
+            record->specific_heat_capacity,
+            record->temperature_change);
+    } else
+        printf("KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####\n");
 }

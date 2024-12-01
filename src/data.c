@@ -164,13 +164,15 @@ void print_data(data_t *data) {
     record_t *record = get_current_record(data);
     int current_page_index = -1;
     printf("----------------------------------------DATA-----------------------------------------\n");
+    // TODO: There will be empty records in a page. So this functionality and is_data_at_end may break
+    // TODO: Fix, so empty records are printed out in the specific way
     while (!is_data_at_end(data)) {
         if (current_page_index != data->page_index) {
             printf("----------------------------------------PAGE %02d--------------------------------------\n", data->page_index);
             current_page_index = data->page_index;
         }
         printf("#%02d ", index_in_file);
-        print_record(*record);
+        print_record(record);
         index_in_file++;
         record = get_next_record(data);
     }
@@ -189,7 +191,6 @@ void insert_dummy_data(data_t *data) {
     record_t *record1 = create_record(0, 4234, 3, 10);
     record_t *record2 = create_record(450, 45, 1000, 31);
     record_t *record3 = create_record(1000, 12, 2000, 3);
-    // record_t *record3 = create_record(DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE);
     record_t *record4 = create_record(1200, 100, 54, 12);
     record_t *record5 = create_record(2000, 76, 2000, 23);
 
