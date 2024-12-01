@@ -4,7 +4,7 @@ data_page_t *create_data_page() {
     data_page_t *page = (data_page_t *)malloc(sizeof(data_page_t));
     initialize_data_page(page);
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
-        page->records[i] = create_record(DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE);
+        page->records[i] = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
     }
     return page;
 }

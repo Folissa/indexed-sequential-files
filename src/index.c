@@ -16,7 +16,7 @@ void destroy_index(index_t *index) {
 }
 
 int index_exists(index_t *index) {
-    if (index->data_page_index == DEFAULT_VALUE)
+    if (index->data_page_index == EMPTY_VALUE)
         return 0;
     return 1;
 }

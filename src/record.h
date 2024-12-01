@@ -16,19 +16,22 @@ typedef struct sensible_heat {
     int mass;
     int specific_heat_capacity;
     int temperature_change;
+    int overflow_pointer;
 } record_t;
 
 // Create new record. Allocate memory, and initialize values.
-record_t *create_record(int key, int mass, int specific_heat_capacity, int temperature_change);
+record_t *create_record(int key, int mass, int specific_heat_capacity, int temperature_change, int overflow_pointer);
 
 // Initialize all fields of the record.
-void initialize_record(record_t *record, int key, int mass, int specific_heat_capacity, int temperature_change);
+void initialize_record(record_t *record, int key, int mass, int specific_heat_capacity, int temperature_change, int overflow_pointer);
 
 // Destroy a record.
 void destroy_record(record_t *record);
 
 // Check for record existence.
 int record_exists(record_t *record);
+
+// int is_record_empty(record_t *record);
 
 // // Append record to a file.
 // void append_record(FILE *file, record_t *record);

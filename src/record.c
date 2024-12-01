@@ -1,16 +1,17 @@
 #include "record.h"
 
-record_t *create_record(int key, int mass, int specific_heat_capacity, int temperature_change) {
+record_t *create_record(int key, int mass, int specific_heat_capacity, int temperature_change, int overflow_pointer) {
     record_t *record = (record_t *)malloc(sizeof(record_t));
-    initialize_record(record, key, mass, specific_heat_capacity, temperature_change);
+    initialize_record(record, key, mass, specific_heat_capacity, temperature_change, overflow_pointer);
     return record;
 }
 
-void initialize_record(record_t *record, int key, int mass, int specific_heat_capacity, int temperature_change) {
+void initialize_record(record_t *record, int key, int mass, int specific_heat_capacity, int temperature_change, int overflow_pointer) {
     record->key = key;
     record->mass = mass;
     record->specific_heat_capacity = specific_heat_capacity;
     record->temperature_change = temperature_change;
+    record->overflow_pointer = overflow_pointer;
 }
 
 void destroy_record(record_t *record) {
@@ -18,7 +19,7 @@ void destroy_record(record_t *record) {
 }
 
 int record_exists(record_t *record) {
-    if (record->mass == DEFAULT_VALUE)
+    if (record->key == EMPTY_VALUE)
         return 0;
     return 1;
 }
@@ -42,20 +43,33 @@ int record_exists(record_t *record) {
 //     return records_count;
 // }
 
+// int is_record_empty(record_t *record) {
+//     if (record->key == EMPTY_VALUE) {
+//         return 1;
+//     }
+//     return 0;
+// }
+
 void copy_record(record_t *source, record_t *destination) {
     destination->key = source->key;
     destination->mass = source->mass;
     destination->specific_heat_capacity = source->specific_heat_capacity;
     destination->temperature_change = source->temperature_change;
+    destination->overflow_pointer = source->overflow_pointer;
 }
 
 void print_record(record_t *record) {
     if (record_exists(record)) {
-        printf("KEY: %5d, MASS: %5d, SPECIFIC_HEAT_CAPACITY: %5d, TEMPERATURE_CHANGE: %5d\n",
+        printf("KEY: %5d, MASS: %5d, SPECIFIC_HEAT_CAPACITY: %5d, TEMPERATURE_CHANGE: %5d, ",
             record->key,
             record->mass,
             record->specific_heat_capacity,
-            record->temperature_change);
+            record->temperature_change,
+            record->overflow_pointer);
+        if (record->overflow_pointer == EMPTY_VALUE) {
+            printf("OVERFLOW_POINTER: #####\n");
+        } else
+            printf("OVERFLOW_POINTER: %5d\n", record->overflow_pointer);
     } else
-        printf("KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####\n");
+        printf("KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####\n");
 }

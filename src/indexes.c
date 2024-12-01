@@ -50,7 +50,7 @@ void write_indexes_page(indexes_t *indexes) {
         if (!index_exists(indexes->page->indexes[i]))
             break;
         write_index(file, indexes->page->indexes[i], index_index);
-        initialize_index(indexes->page->indexes[i], DEFAULT_VALUE, DEFAULT_VALUE);
+        initialize_index(indexes->page->indexes[i], EMPTY_VALUE, EMPTY_VALUE);
     }
     close_file(file);
     (indexes->writes)++;
@@ -62,7 +62,7 @@ void read_index(indexes_t *indexes, char *buffer, int index_index) {
     if (buffer[index_offset] == '\0') {
         // Situation: there are indexes to read, but it will not fill the whole page,
         // so we initalize as they do not exist
-        initialize_index(indexes->page->indexes[index_index], DEFAULT_VALUE, DEFAULT_VALUE);
+        initialize_index(indexes->page->indexes[index_index], EMPTY_VALUE, EMPTY_VALUE);
         return;
     }
     char temp[INT_WIDTH + NULL_CHARACTER_SIZE];
@@ -95,7 +95,7 @@ void read_indexes_page(indexes_t *indexes) {
     } else {
         // Reached EOF, mark whole page as non existing
         for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++) {
-            initialize_index(indexes->page->indexes[i], DEFAULT_VALUE, DEFAULT_VALUE);
+            initialize_index(indexes->page->indexes[i], EMPTY_VALUE, EMPTY_VALUE);
         }
     }
     close_file(file);
@@ -144,7 +144,7 @@ int find_data_page_index(indexes_t *indexes, record_t *record) {
     int key = record->key;
     int data_page_index;
     move_indexes_to_start(indexes);
-    index_t *previous_index = create_index(DEFAULT_VALUE, DEFAULT_VALUE);
+    index_t *previous_index = create_index(EMPTY_VALUE, EMPTY_VALUE);
     index_t *index = get_current_index(indexes);
     while (!is_indexes_at_end(indexes)) {
         if (index_exists(previous_index) && index->key > key) {
