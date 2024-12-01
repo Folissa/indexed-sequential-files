@@ -59,17 +59,26 @@ void copy_record(record_t *source, record_t *destination) {
 }
 
 void print_record(record_t *record) {
+    char format[50] = "";
+    for (int i = 0; i < INT_WIDTH; i++) {
+        strcat(format, "#");
+    }
+
     if (record_exists(record)) {
-        printf("KEY: %5d, MASS: %5d, SPECIFIC_HEAT_CAPACITY: %5d, TEMPERATURE_CHANGE: %5d, ",
-            record->key,
-            record->mass,
-            record->specific_heat_capacity,
-            record->temperature_change,
-            record->overflow_pointer);
+        printf("KEY: %*d, MASS: %*d, SPECIFIC_HEAT_CAPACITY: %*d, TEMPERATURE_CHANGE: %*d, ",
+            INT_WIDTH, record->key,
+            INT_WIDTH, record->mass,
+            INT_WIDTH, record->specific_heat_capacity,
+            INT_WIDTH, record->temperature_change);
         if (record->overflow_pointer == EMPTY_VALUE) {
-            printf("OVERFLOW_POINTER: #####\n");
+            printf("OVERFLOW_POINTER: %s\n", format);
         } else
-            printf("OVERFLOW_POINTER: %5d\n", record->overflow_pointer);
+            printf("OVERFLOW_POINTER: %*d\n", INT_WIDTH, record->overflow_pointer);
     } else
-        printf("KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####\n");
+        printf("KEY: %s MASS: %s, SPECIFIC_HEAT_CAPACITY: %s, TEMPERATURE_CHANGE: %s, OVERFLOW_POINTER: %s\n",
+            format,
+            format,
+            format,
+            format,
+            format);
 }

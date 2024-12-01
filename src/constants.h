@@ -7,7 +7,7 @@
 
 #define NULL_CHARACTER_SIZE 1
 #define INPUT_BUFFER_SIZE 64
-#define INT_WIDTH 8
+#define INT_WIDTH 5
 #define EMPTY_VALUE -1
 
 #define FIRST_PARAMETER_OFFSET 0
