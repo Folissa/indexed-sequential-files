@@ -7,6 +7,7 @@
 
 #include "file.h"
 #include "indexes_page.h"
+#include "record.h"
 
 typedef struct {
     char *filename;
@@ -36,6 +37,15 @@ void read_indexes_page(indexes_t *indexes);
 
 void add_index(indexes_t *indexes, index_t *index);
 
-index_t *get_next(indexes_t *indexes);
+index_t *get_next_index(indexes_t *indexes);
+
+void insert_dummy_indexes(indexes_t *indexes);
+
+void move_indexes_to_start(indexes_t *indexes);
+
+// Returns the index of a page that can hold the record, based on the record's key.
+int find_data_page_index(indexes_t *indexes, record_t *record);
+
+int is_indexes_at_end(indexes_t *indexes);
 
 #endif // INDEXES_H

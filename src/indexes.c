@@ -109,8 +109,60 @@ void add_index(indexes_t *indexes, index_t *index) {
     copy_index(index, indexes->page->indexes[indexes->page->index_index]);
 }
 
-index_t *get_next(indexes_t *indexes) {
+index_t *get_next_index(indexes_t *indexes) {
     indexes->page->index_index++;
     handle_full_indexes_page(indexes, 0, 1);
     return indexes->page->indexes[indexes->page->index_index];
+}
+
+void insert_dummy_indexes(indexes_t *indexes) {
+    index_t *index1 = create_index(0, 0);
+    index_t *index2 = create_index(1, 1000);
+    index_t *index3 = create_index(2, 2000);
+
+    add_index(indexes, index1);
+    add_index(indexes, index2);
+    add_index(indexes, index3);
+    write_indexes_page(indexes);
+
+    destroy_index(index1);
+    destroy_index(index2);
+    destroy_index(index3);
+}
+
+void move_indexes_to_start(indexes_t *indexes) {
+    indexes->page->index_index = 0;
+    indexes->page_index = 0;
+    read_indexes_page(indexes);
+}
+
+record_t *get_current_index(indexes_t *indexes) {
+    return indexes->page->indexes[indexes->page->index_index];
+}
+
+int find_data_page_index(indexes_t *indexes, record_t *record) {
+    int key = record->key;
+    int data_page_index;
+    move_indexes_to_start(indexes);
+    index_t *previous_index = create_index(DEFAULT_VALUE, DEFAULT_VALUE);
+    index_t *index = get_current_index(indexes);
+    while (!is_indexes_at_end(indexes)) {
+        if (index_exists(previous_index) && index->key > key) {
+            data_page_index = previous_index->data_page_index;
+            destroy_index(previous_index);
+            return data_page_index;
+        }
+        copy_index(index, previous_index);
+        index = get_next_index(indexes);
+    }
+    if (index_exists(previous_index))
+        data_page_index = previous_index->data_page_index;
+    else 
+        data_page_index = index->data_page_index;
+    destroy_index(previous_index);
+    return data_page_index;
+}
+
+int is_indexes_at_end(indexes_t *indexes) {
+    return !(index_exists(indexes->page->indexes[indexes->page->index_index]));
 }

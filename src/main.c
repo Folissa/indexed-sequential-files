@@ -20,6 +20,32 @@ int main() {
     indexes_t *indexes = create_indexes(INDEXES_FILENAME);
     data_t *data = create_data(DATA_FILENAME);
 
+    insert_dummy_indexes(indexes);
+
+#ifndef DEBUG
+#define DEBUG
+    int index;
+    record_t *record; 
+    record = create_record(0, 1, 1, 1);
+    index = find_data_page_index(indexes, record);
+    destroy_record(record);
+    record = create_record(1, 1, 1, 1);
+    index = find_data_page_index(indexes, record);
+    destroy_record(record);
+    record = create_record(1000, 1, 1, 1);
+    index = find_data_page_index(indexes, record);
+    destroy_record(record);
+    record = create_record(1005, 1, 1, 1);
+    index = find_data_page_index(indexes, record);
+    destroy_record(record);
+    record = create_record(2000, 1, 1, 1);
+    index = find_data_page_index(indexes, record);
+    destroy_record(record);
+    record = create_record(2005, 1, 1, 1);
+    index = find_data_page_index(indexes, record);
+    destroy_record(record);
+#endif // DEBUG
+
     int exit = 0;
     int choice;
     while (!exit) {
