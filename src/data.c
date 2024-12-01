@@ -193,18 +193,18 @@ void print_data(data_t *data) {
     destroy_data_page(temp_page);
 }
 
-void insert_dummy_data(data_t *data) {
+void insert_dummy_data(indexes_t *indexes, data_t *data) {
     record_t *record1 = create_record(0, 4234, 3, 10, EMPTY_VALUE);
-    record_t *record2 = create_record(450, 45, 1000, 31, 9);
+    record_t *record2 = create_record(450, 45, 1000, 31, EMPTY_VALUE);
     record_t *record3 = create_record(1000, 12, 2000, 3, EMPTY_VALUE);
     record_t *record4 = create_record(1200, 100, 54, 12, EMPTY_VALUE);
     record_t *record5 = create_record(2000, 76, 2000, 23, EMPTY_VALUE);
 
-    add_record(data, record1);
-    add_record(data, record2);
-    add_record(data, record3);
-    add_record(data, record4);
-    add_record(data, record5);
+    insert_record(indexes, data, record1);
+    insert_record(indexes, data, record2);
+    insert_record(indexes, data, record3);
+    insert_record(indexes, data, record4);
+    insert_record(indexes, data, record5);
 
     write_data_page(data);
 
@@ -217,8 +217,23 @@ void insert_dummy_data(data_t *data) {
 
 void insert_record(indexes_t *indexes, data_t *data, record_t *record) {
     data->page_index  = find_data_page_index(indexes, record);
+    data->page->record_index = 0;
     read_data_page(data);
-    // TODO: Add the page to the overflow based on the recoed key if it needs so
+    int record_index = 0;
+    record_t *current_record = get_current_record(data);
+    for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
+        // TODO: If there is no space to add (end of page or no space between records) add it to overflow
+        if (current_record->key == record->key) {
+            printf("WARNING: Record with key %d already exists!\n", current_record->key);
+            return;
+        }
+        if (!(record_exists(current_record) || current_record->key > record->key)) {
+            data->page->record_index = record_index;
+            break;
+        }
+        record_index = data->page->record_index;
+        current_record = get_next_record(data);
+    }
     add_record(data, record);
     write_data_page(data);
 }

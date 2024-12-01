@@ -27,10 +27,10 @@ void print_help();
 void print_invalid_input_message(int invalid_format);
 
 //
-void load_operations_from_file(indexes_t *indexes, data_t *data);
+void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflow);
 
 //
-void input_operations_from_keyboard(indexes_t *indexes, data_t *data);
+void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *overflow);
 
 // Prints a menu with input options to choose from.
 void print_menu();

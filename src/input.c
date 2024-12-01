@@ -29,10 +29,10 @@ void print_invalid_input_message(int invalid_format) {
     }
 }
 
-void load_operations_from_file(indexes_t *indexes, data_t *data) {
+void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflow) {
 }
 
-void input_operations_from_keyboard(indexes_t *indexes, data_t *data) {
+void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *overflow) {
     clear_input_buffer();
     char input[INPUT_BUFFER_SIZE];
     int exit = 0;
@@ -77,6 +77,7 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data) {
             continue;
         }
         print_data(data);
+        print_data(overflow);
     }
 }
 

@@ -141,24 +141,23 @@ index_t *get_current_index(indexes_t *indexes) {
 }
 
 int find_data_page_index(indexes_t *indexes, record_t *record) {
-    int key = record->key;
     int data_page_index;
     move_indexes_to_start(indexes);
     index_t *previous_index = create_index(EMPTY_VALUE, EMPTY_VALUE);
-    index_t *index = get_current_index(indexes);
+    index_t *current_index = get_current_index(indexes);
     while (!is_indexes_at_end(indexes)) {
-        if (index_exists(previous_index) && index->key > key) {
+        if (index_exists(previous_index) && current_index->key > record->key) {
             data_page_index = previous_index->data_page_index;
             destroy_index(previous_index);
             return data_page_index;
         }
-        copy_index(index, previous_index);
-        index = get_next_index(indexes);
+        copy_index(current_index, previous_index);
+        current_index = get_next_index(indexes);
     }
     if (index_exists(previous_index))
         data_page_index = previous_index->data_page_index;
     else 
-        data_page_index = index->data_page_index;
+        data_page_index = current_index->data_page_index;
     destroy_index(previous_index);
     return data_page_index;
 }

@@ -8,7 +8,7 @@
 
 // TODO: Record insert
 // TODO: Record read
-// TODO: File browsing (on demand (?), after each operation), so we can check where the record is (in the main area, or in the overflow area)
+// DONE: File browsing (on demand (?), after each operation), so we can check where the record is (in the main area, or in the overflow area)
 // TODO: After each operation, the number of reads from, and writes to a file are printed out
 // DONE: Input implemented from the keyboard as an interactive program
 // TODO: Input implemmented from the file - it should be any sequence of opearations like adding, updating, and removing records
@@ -16,12 +16,13 @@
 
 int main() {
     int records_count = 0;
-
     indexes_t *indexes = create_indexes(INDEXES_FILENAME);
     data_t *data = create_data(DATA_FILENAME);
-
+    data_t *overflow = create_data(OVERFLOW_FILENAME);
     insert_dummy_indexes(indexes);
-
+    insert_dummy_data(indexes, data);
+    print_data(data);
+    print_data(overflow);
 #ifndef DEBUG
 #define DEBUG
     int index;
@@ -45,10 +46,6 @@ int main() {
     index = find_data_page_index(indexes, record);
     destroy_record(record);
 #endif // DEBUG
-
-    insert_dummy_data(data);
-    print_data(data);
-
     int exit = 0;
     int choice;
     while (!exit) {
@@ -57,11 +54,11 @@ int main() {
         scanf("%d", &choice);
         switch (choice) {
         case 1:
-            load_operations_from_file(indexes, data);
+            load_operations_from_file(indexes, data, overflow);
             exit = 1;
             break;
         case 2:
-            input_operations_from_keyboard(indexes, data);
+            input_operations_from_keyboard(indexes, data, overflow);
             exit = 1;
             break;
         case 3:
@@ -72,7 +69,6 @@ int main() {
             break;
         }
     };
-
     destroy_indexes(indexes);
     destroy_data(data);
     return 0;
