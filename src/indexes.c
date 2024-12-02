@@ -116,19 +116,21 @@ index_t *get_next_index(indexes_t *indexes) {
 }
 
 void insert_dummy_indexes(indexes_t *indexes) {
-    index_t *index1 = create_index(0, 0);
-    index_t *index2 = create_index(1, 1000);
-    index_t *index3 = create_index(2, 2000);
+    index_t *index = create_index(0, 0);
+    add_index(indexes, index);
+    destroy_index(index);
 
-    add_index(indexes, index1);
-    add_index(indexes, index2);
-    add_index(indexes, index3);
+    index = create_index(1, 1000);
+    add_index(indexes, index);
+    destroy_index(index);
+
+    index = create_index(2, 2000);
+    add_index(indexes, index);
+    destroy_index(index);
+
     write_indexes_page(indexes);
-
-    destroy_index(index1);
-    destroy_index(index2);
-    destroy_index(index3);
 }
+
 
 void move_indexes_to_start(indexes_t *indexes) {
     indexes->page->index_index = 0;

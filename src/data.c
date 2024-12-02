@@ -1,18 +1,19 @@
 #include "data.h"
 
-data_t *create_data(char *filename) {
+data_t *create_data(char *filename, int number_of_pages) {
     init_file(filename);
     data_t *data = (data_t *)malloc(sizeof(data_t));
-    initialize_data(data, filename);
+    initialize_data(data, filename, number_of_pages);
     data->page = create_data_page();
     return data;
 }
 
-void initialize_data(data_t *data, char *filename) {
+void initialize_data(data_t *data, char *filename, int number_of_pages) {
     data->filename = filename;
     data->page_index = 0;
     data->writes = 0;
     data->reads = 0;
+    data->number_of_pages = number_of_pages;
 }
 
 void destroy_data(data_t *data) {
@@ -110,7 +111,8 @@ void read_data_page(data_t *data) {
 }
 
 int is_data_at_end(data_t *data) {
-    return !(record_exists(data->page->records[data->page->record_index]));
+    return data->page_index == data->number_of_pages && data->page->record_index == 0;
+    // return !(record_exists(data->page->records[data->page->record_index]));
 }
 
 void add_record(data_t *data, record_t *record) {
@@ -166,13 +168,11 @@ void print_data(data_t *data) {
     record_t *record = get_current_record(data);
     int index_in_file = 0;
     int current_page_index = -1;
-    if (data->filename == DATA_FILENAME)
+    if (strcmp(data->filename, DATA_FILENAME))
         printf("----------------------------------------------------DATA------------------------------------------------------\n");
-    else if (data->filename == OVERFLOW_FILENAME)
+    else if (strcmp(data->filename, OVERFLOW_FILENAME))
         printf("----------------------------------------------------OVERFLOW--------------------------------------------------\n");
-    // TODO: There will be empty records in a page. So this functionality and is_data_at_end may break
-    // TODO: Fix, so empty records are printed out in the specific way
-    while (!is_data_at_end(data) || data->page->record_index != 0) {
+    while (!is_data_at_end(data)) {
         if (current_page_index != data->page_index) {
             printf("----------------------------------------------------PAGE-%02d---------------------------------------------------\n", data->page_index);
             current_page_index = data->page_index;
@@ -193,49 +193,68 @@ void print_data(data_t *data) {
     destroy_data_page(temp_page);
 }
 
-void insert_dummy_data(indexes_t *indexes, data_t *data) {
-    record_t *record1 = create_record(0, 4234, 3, 10, EMPTY_VALUE);
-    record_t *record2 = create_record(450, 45, 1000, 31, EMPTY_VALUE);
-    record_t *record3 = create_record(1000, 12, 2000, 3, EMPTY_VALUE);
-    record_t *record4 = create_record(1200, 100, 54, 12, EMPTY_VALUE);
-    record_t *record5 = create_record(2000, 76, 2000, 23, EMPTY_VALUE);
+void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow) {
+    record_t *record;
+    record = create_record(450, 45, 1000, 31, EMPTY_VALUE);
+    insert_record(indexes, data, overflow, record);
+    destroy_record(record);
 
-    insert_record(indexes, data, record1);
-    insert_record(indexes, data, record2);
-    insert_record(indexes, data, record3);
-    insert_record(indexes, data, record4);
-    insert_record(indexes, data, record5);
+    record = create_record(1000, 12, 2000, 3, EMPTY_VALUE);
+    insert_record(indexes, data, overflow, record);
+    destroy_record(record);
+
+    record = create_record(0, 4234, 3, 10, EMPTY_VALUE);
+    insert_record(indexes, data, overflow, record);
+    destroy_record(record);
+
+    record = create_record(1200, 100, 54, 12, EMPTY_VALUE);
+    insert_record(indexes, data, overflow, record);
+    destroy_record(record);
+
+    record = create_record(2000, 76, 2000, 23, EMPTY_VALUE);
+    insert_record(indexes, data, overflow, record);
+    destroy_record(record);
 
     write_data_page(data);
-
-    destroy_record(record1);
-    destroy_record(record2);
-    destroy_record(record3);
-    destroy_record(record4);
-    destroy_record(record5);
 }
 
-void insert_record(indexes_t *indexes, data_t *data, record_t *record) {
+void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record) {
     data->page_index  = find_data_page_index(indexes, record);
     data->page->record_index = 0;
     read_data_page(data);
     int record_index = 0;
+    record_t *previous_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
     record_t *current_record = get_current_record(data);
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
-        // TODO: If there is no space to add (end of page or no space between records) add it to overflow
         if (current_record->key == record->key) {
             printf("WARNING: Record with key %d already exists!\n", current_record->key);
-            return;
+            break;;
         }
-        if (!(record_exists(current_record) || current_record->key > record->key)) {
+        // Add record normally
+        if (!(record_exists(current_record))) {
             data->page->record_index = record_index;
+            add_record(data, record);
+            write_data_page(data);
+            break;
+        }
+        // Add record to overflow
+        else if (record_exists(current_record) && current_record->key > record->key) {
+            add_to_overflow(overflow, previous_record, current_record);
             break;
         }
         record_index = data->page->record_index;
+        copy_record(current_record, previous_record);
         current_record = get_next_record(data);
     }
-    add_record(data, record);
-    write_data_page(data);
+    destroy_record(previous_record);
+}
+
+void add_to_overflow(data_t *overflow, record_t *parent, record_t *child) {
+    if (parent->overflow_pointer == EMPTY_VALUE) {
+        // Overflow needs to be created
+    } else {
+        // Append to overflow
+    }
 }
 
 void get_record(indexes_t *indexes, data_t *data, int key) {

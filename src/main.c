@@ -17,10 +17,10 @@
 int main() {
     int records_count = 0;
     indexes_t *indexes = create_indexes(INDEXES_FILENAME);
-    data_t *data = create_data(DATA_FILENAME);
-    data_t *overflow = create_data(OVERFLOW_FILENAME);
+    data_t *data = create_data(DATA_FILENAME, NUMBER_OF_DATA_PAGES);
+    data_t *overflow = create_data(OVERFLOW_FILENAME, NUMBER_OF_OVERFLOW_PAGES);
     insert_dummy_indexes(indexes);
-    insert_dummy_data(indexes, data);
+    insert_dummy_data(indexes, data, overflow);
     print_data(data);
     print_data(overflow);
 #ifndef DEBUG

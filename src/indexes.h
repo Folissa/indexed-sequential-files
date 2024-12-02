@@ -15,6 +15,7 @@ typedef struct {
     indexes_page_t *page;
     int writes;
     int reads;
+    int number_of_pages;
 } indexes_t;
 
 indexes_t *create_indexes(char *filename);

@@ -18,13 +18,14 @@ typedef struct {
     data_page_t *page;
     int writes;
     int reads;
+    int number_of_pages;
 } data_t;
 
 // Create new data.
-data_t *create_data(char *filename);
+data_t *create_data(char *filename, int number_of_pages);
 
 // Initialize all fields of the data.
-void initialize_data(data_t *data, char *filename);
+void initialize_data(data_t *data, char *filename, int number_of_pages);
 
 // Destroy a data.
 void destroy_data(data_t *data);
@@ -66,13 +67,15 @@ void reset_data_page(data_t *data);
 void move_data_to_start(data_t *data);
 
 //
-void insert_record(indexes_t *indexes, data_t *data, record_t *record);
+void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record);
 
 //
 void get_record(indexes_t *indexes, data_t *data, int key);
 
 void print_data(data_t *data);
 
-void insert_dummy_data(indexes_t *indexes, data_t *data);
+void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
+
+void add_to_overflow(data_t *overflow, record_t *parent, record_t *child);
 
 #endif // DATA_H

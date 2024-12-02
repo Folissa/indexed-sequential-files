@@ -57,7 +57,7 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *ov
             char *args = strtok(NULL, "");
             if (args != NULL && sscanf(args, "%d %d %d %d", &key, &mass, &specific_heat_capacity, &temperature_change) == 4) {
                 record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change, EMPTY_VALUE);
-                insert_record(indexes, data, record);
+                insert_record(indexes, data, overflow, record);
             } else {
                 print_invalid_input_message(1);
             }
