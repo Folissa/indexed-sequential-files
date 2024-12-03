@@ -76,6 +76,12 @@ void print_data(data_t *data);
 
 void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
 
-void add_to_overflow(data_t *overflow, record_t *parent, record_t *child);
+void add_to_overflow(data_t *data, data_t *overflow, record_t *parent, record_t *child);
+
+int find_overflow_end(data_t *overflow);
+
+int get_page_index(int record_pointer);
+
+int get_record_index(int record_pointer);
 
 #endif // DATA_H
