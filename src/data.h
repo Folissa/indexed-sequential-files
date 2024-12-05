@@ -72,20 +72,27 @@ void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t 
 //
 void get_record(indexes_t *indexes, data_t *data, int key);
 
+//
 void print_data(data_t *data);
 
+//
 void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
 
+//
 void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child);
 
+//
 int find_free_space(data_t *overflow);
 
+//
 int get_page_index(int record_pointer);
 
+//
 int get_record_index(int record_pointer);
 
-int update_chain(data_t *overflow, int current_pointer, int record_key, int record_pointer);
+int update_chain(data_t *overflow, int current_pointer, int record_pointer, record_t *record);
 
+//
 void get_next_in_chain(data_t *overflow, int pointer);
 
 #endif // DATA_H
