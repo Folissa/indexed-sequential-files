@@ -265,7 +265,7 @@ void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t 
         else if ((record_exists(previous_record) && current_record->key > record->key)) {
             add_to_overflow(data, overflow, data->page->record_index - 1, record);
             break;
-        } 
+        }
         // Parent is the current (last in the page) record
         else if (i == RECORD_COUNT_PER_PAGE - 1) {
             add_to_overflow(data, overflow, data->page->record_index, record);
@@ -282,7 +282,6 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
     int index_in_file = find_free_space(overflow);
     if (index_in_file != ERROR_VALUE) {
         // Add record to the overflow
-        // TODO: Load the page where the record is (check if the load is currently loaded to not load twice the same page)
         int append_overflow = 1;
         // Update the pointer
         if (data->page->records[parent_record_index]->overflow_pointer == EMPTY_VALUE) {
@@ -291,7 +290,7 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
             write_data_page(data);
         } else {
             // Add pointer to overflow record
-            append_overflow = update_chain(overflow, data->page->records[parent_record_index]->overflow_pointer , index_in_file);
+            append_overflow = update_chain(overflow, data->page->records[parent_record_index]->overflow_pointer, child->key, index_in_file);
         }
         if (append_overflow) {
             overflow->page_index = get_page_index(index_in_file);
@@ -304,20 +303,30 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
     }
 }
 
-int update_chain(data_t *overflow, int first_pointer, int pointer_to_insert) {
-    // Set place to the first pointer
-    overflow->page_index = get_page_index(first_pointer);
-    overflow->page->record_index = get_record_index(first_pointer);
-    read_data_page(overflow);
-    // Look for empty pointer so we can insert it here
+int update_chain(data_t *overflow, int current_pointer, int record_key, int record_pointer) {
+    get_next_in_chain(overflow, current_pointer);
+    // Look for empty and valid pointer space
     while (overflow->page->records[overflow->page->record_index]->overflow_pointer != EMPTY_VALUE) {
-        overflow->page_index = get_page_index(overflow->page->records[overflow->page->record_index]->overflow_pointer);
-        overflow->page->record_index = get_record_index(overflow->page->records[overflow->page->record_index]->overflow_pointer);
-        read_data_page(overflow);
+        get_next_in_chain(overflow, overflow->page->records[overflow->page->record_index]->overflow_pointer);
     }
-    overflow->page->records[overflow->page->record_index]->overflow_pointer = pointer_to_insert;
+    if (overflow->page->records[overflow->page->record_index]->key > record_key) {
+        printf("WARNING: No space for the record in the chain!\n");
+        return 0;
+    } else if (overflow->page->records[overflow->page->record_index]->key == record_key) {
+        printf("WARNING: Record with key %d already exists!\n", record_key);
+        return 0;
+    }
+    // Insert the pointer
+    overflow->page->records[overflow->page->record_index]->overflow_pointer = record_pointer;
     write_data_page(overflow);
     return 1;
+}
+
+void get_next_in_chain(data_t *overflow, int pointer) {
+    // TODO: Load the page where the record is (check if the load is currently loaded to not load twice the same page)
+    overflow->page_index = get_page_index(pointer);
+    overflow->page->record_index = get_record_index(pointer);
+    read_data_page(overflow);
 }
 
 int find_free_space(data_t *overflow) {
