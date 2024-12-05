@@ -66,33 +66,34 @@ void reset_data_page(data_t *data);
 // Change values in the data to point to the beginning of it, and load first page.
 void move_data_to_start(data_t *data);
 
-//
+// Inserts record into a valid space in data or overflow.
 void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record);
 
 //
 void get_record(indexes_t *indexes, data_t *data, int key);
 
-//
+// Prints the contents of data.
 void print_data(data_t *data);
 
-//
+// Inserts some dummy data to work on.
 void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
 
-//
+// Adds a record to overflow.
 void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child);
 
-//
+// Searches for an empty space in overflow and returns the found position.
 int find_free_space(data_t *overflow);
 
-//
+// Returns page index where the record is.
 int get_page_index(int record_pointer);
 
-//
+// Returns record index where the record is in the page.
 int get_record_index(int record_pointer);
 
+// Updates pointers in overflow.
 int update_chain(data_t *overflow, int current_pointer, int record_pointer, record_t *record);
 
-//
+// Loads a page based on where the next record is from the overflow.
 void get_next_in_chain(data_t *overflow, int pointer);
 
 #endif // DATA_H

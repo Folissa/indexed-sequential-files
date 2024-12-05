@@ -6,7 +6,7 @@
 #include "indexes.h"
 #include "data.h"
 
-// TODO: Record insert
+// DONE: Record insert
 // TODO: Record read
 // DONE: File browsing (on demand (?), after each operation), so we can check where the record is (in the main area, or in the overflow area)
 // TODO: After each operation, the number of reads from, and writes to a file are printed out

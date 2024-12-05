@@ -24,32 +24,6 @@ int record_exists(record_t *record) {
     return 1;
 }
 
-// void append_record(FILE *file, record_t *record) {
-//     fprintf(file, "%0*d%0*d%0*d%0*d",
-//         INT_WIDTH, record->key,
-//         INT_WIDTH, record->mass,
-//         INT_WIDTH, record->specific_heat_capacity,
-//         INT_WIDTH, record->temperature_change);
-// }
-
-// int count_records(char *filename) {
-//     FILE *file = open_file(filename, "r");
-//     int records_count = 0;
-//     char buffer[RECORD_PARAMETERS_COUNT * INT_WIDTH + NULL_CHARACTER_SIZE];
-//     while (fread(buffer, sizeof(char), RECORD_PARAMETERS_COUNT * INT_WIDTH, file) == RECORD_PARAMETERS_COUNT * INT_WIDTH) {
-//         records_count++;
-//     }
-//     fclose(file);
-//     return records_count;
-// }
-
-// int is_record_empty(record_t *record) {
-//     if (record->key == EMPTY_VALUE) {
-//         return 1;
-//     }
-//     return 0;
-// }
-
 void copy_record(record_t *source, record_t *destination) {
     destination->key = source->key;
     destination->mass = source->mass;

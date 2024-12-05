@@ -31,20 +31,10 @@ void destroy_record(record_t *record);
 // Check for record existence.
 int record_exists(record_t *record);
 
-// int is_record_empty(record_t *record);
-
-// // Append record to a file.
-// void append_record(FILE *file, record_t *record);
-
-// // Count records in the file.
-// int count_records(char *filename);
-
-// // Calculate sennsible heat.
-// long long calculate_sensible_heat(record_t record);
-
 // Copy record values from source to destination.
 void copy_record(record_t *source, record_t *destination);
 
+// Prints record values.
 void print_record(record_t *record);
 
 #endif // RECORD_H
