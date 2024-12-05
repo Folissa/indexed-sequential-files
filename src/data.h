@@ -84,4 +84,6 @@ int get_page_index(int record_pointer);
 
 int get_record_index(int record_pointer);
 
+int update_chain(data_t *overflow, int first_pointer, int pointer_to_insert);
+
 #endif // DATA_H
