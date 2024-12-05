@@ -21,15 +21,18 @@ void destroy_data(data_t *data) {
     free(data);
 }
 
-void handle_full_data_page(data_t *data, int write, int read) {
+int handle_full_data_page(data_t *data, int write, int read) {
+    int page_was_written = 0;
     if (is_data_page_full(*(data->page))) {
         if (write)
             write_data_page(data);
+        page_was_written = 1;
         data->page_index++;
         data->page->record_index = 0;
         if (read)
             read_data_page(data);
     }
+    return page_was_written;
 }
 
 void write_record(FILE *file, record_t *record, int record_index) {
@@ -54,8 +57,6 @@ void write_data_page(data_t *data) {
         FILE *file = open_file(data->filename, "r+");
         for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
             int record_index = data->page_index * RECORD_COUNT_PER_PAGE + i;
-            // if (!record_exists(data->page->records[i]))
-            //     break;
             write_record(file, data->page->records[i], record_index);
             initialize_record(data->page->records[i], EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
         }
@@ -120,12 +121,13 @@ int is_data_at_end(data_t *data) {
 }
 
 // TODO: Cap this, so it doesn't add more if we are out of pages
-void add_record(data_t *data, record_t *record) {
+int add_record(data_t *data, record_t *record) {
     if (record_exists(data->page->records[data->page->record_index])) {
         (data->page->record_index)++;
     }
-    handle_full_data_page(data, 1, 0);
+    int page_was_written = handle_full_data_page(data, 1, 0);
     copy_record(record, data->page->records[data->page->record_index]);
+    return page_was_written;
 }
 
 record_t *get_next_record(data_t *data) {
@@ -228,7 +230,6 @@ void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow) {
     insert_record(indexes, data, overflow, record);
     destroy_record(record);
 
-    // TODO: When this is inserted, two empty spaces are created before, but something weird happens -> look at commented write_page fragment
     record = create_record(2000, 76, 2000, 23, EMPTY_VALUE);
     insert_record(indexes, data, overflow, record);
     destroy_record(record);
@@ -243,7 +244,7 @@ void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t 
     record_t *current_record = get_current_record(data);
 
     if (record_exists(current_record) && record->key < current_record->key) {
-        // TODO: Edgecase ???
+        // TODO: Edgecase
         return;
     }
 
@@ -252,16 +253,22 @@ void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t 
             printf("WARNING: Record with key %d already exists!\n", current_record->key);
             break;
         }
-        // Add record normally
+        // Add record when there is an empty space
         if (!(record_exists(current_record))) {
             data->page->record_index = record_index;
-            add_record(data, record);
-            write_data_page(data);
+            int page_was_written = add_record(data, record);
+            if (!page_was_written)
+                write_data_page(data);
             break;
         }
-        // Add record to overflow
-        else if (record_exists(current_record) && record_exists(previous_record) && current_record->key > record->key) {
-            add_to_overflow(data, overflow, previous_record, record);
+        // Parent is the previous record
+        else if ((record_exists(previous_record) && current_record->key > record->key)) {
+            add_to_overflow(data, overflow, data->page->record_index - 1, record);
+            break;
+        } 
+        // Parent is the current (last in the page) record
+        else if (i == RECORD_COUNT_PER_PAGE - 1) {
+            add_to_overflow(data, overflow, data->page->record_index, record);
             break;
         }
         record_index = data->page->record_index;
@@ -271,26 +278,45 @@ void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t 
     destroy_record(previous_record);
 }
 
-void add_to_overflow(data_t *data, data_t *overflow, record_t *parent, record_t *child) {
-    if (parent->overflow_pointer == EMPTY_VALUE) {
-        int index_in_file = find_overflow_end(overflow);
+void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child) {
+    if (data->page->records[parent_record_index]->overflow_pointer == EMPTY_VALUE) {
+        int index_in_file = find_free_space(overflow);
         if (index_in_file != ERROR_VALUE) {
             // Parent has no children and there is empty space in overflow
-            // TODO: Parent info needs to be saved to data etc. (right now it is saved to parent, but parent is not connected to data)
-            parent->overflow_pointer = index_in_file;
+            data->page->records[parent_record_index]->overflow_pointer = index_in_file;
             overflow->page_index = get_page_index(index_in_file);
             overflow->page->record_index = get_record_index(index_in_file);
-            add_record(overflow, child);
+            int page_was_written = add_record(overflow, child);
+            if (!page_was_written)
+                write_data_page(overflow);
+            // Write the overflow_pointer for the parent
             write_data_page(data);
-            write_data_page(overflow);
         }
     } else {
         // Append to overflow
-        // TODO: Implement search for the record?
+        update_chain();
     }
 }
 
-int find_overflow_end(data_t *overflow) {
+void append_overflow() {
+    
+}
+
+int update_chain(data_t *overflow, int overflow_pointer) {
+    // Set place to the first pointer
+    overflow->page_index = get_page_index(overflow_pointer);
+    overflow->page->record_index = get_record_index(overflow_pointer);
+    // TODO: Load the page where the record is (check if the load is currently loaded to not load twice the same page)
+    read_data_page(overflow);
+    // Look for empty pointer so we can insert it here
+    while (overflow->page->records[overflow->page->record_index]->overflow_pointer != EMPTY_VALUE) {
+        overflow->page_index = get_page_index(overflow_pointer);
+        overflow->page->record_index = get_record_index(overflow_pointer);
+    }
+    // When we find the empty space add the pointer? (The record should be appended to the overflow and here the pointer is updated)
+}
+
+int find_free_space(data_t *overflow) {
     overflow->page_index = 0;
     overflow->page->record_index = 0;
     read_data_page(overflow);

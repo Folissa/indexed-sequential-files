@@ -31,7 +31,7 @@ void initialize_data(data_t *data, char *filename, int number_of_pages);
 void destroy_data(data_t *data);
 
 // Handle situation when the page is full.
-void handle_full_data_page(data_t *data, int write, int read);
+int handle_full_data_page(data_t *data, int write, int read);
 
 // Write record to a file at specific index.
 void write_record(FILE *file, record_t *record, int record_index);
@@ -49,7 +49,7 @@ void read_data_page(data_t *data);
 int is_data_at_end(data_t *data);
 
 // Add record to the page and handle when the page is full.
-void add_record(data_t *data, record_t *record);
+int add_record(data_t *data, record_t *record);
 
 // Get record from the page and handle when the page is full.
 record_t *get_next_record(data_t *data);
@@ -76,9 +76,9 @@ void print_data(data_t *data);
 
 void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
 
-void add_to_overflow(data_t *data, data_t *overflow, record_t *parent, record_t *child);
+void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child);
 
-int find_overflow_end(data_t *overflow);
+int find_free_space(data_t *overflow);
 
 int get_page_index(int record_pointer);
 

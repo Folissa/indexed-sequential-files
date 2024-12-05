@@ -66,6 +66,7 @@ int main() {
             break;
         default:
             printf("Invalid choice, please try again.\n");
+            clear_input_buffer();
             break;
         }
     };
