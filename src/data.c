@@ -236,7 +236,7 @@ void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow) {
 }
 
 void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record) {
-    data->page_index = find_data_page_index(indexes, record);
+    data->page_index = find_data_page_index(indexes, record->key);
     data->page->record_index = 0;
     read_data_page(data);
     int record_index = 0;
@@ -377,5 +377,48 @@ int get_record_index(int record_pointer) {
     return record_pointer % RECORD_COUNT_PER_PAGE;
 }
 
-void get_record(indexes_t *indexes, data_t *data, int key) {
+record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int record_key) {
+    // TODO: Refactor (task for students)
+    data->page_index = find_data_page_index(indexes, record_key);
+    data->page->record_index = 0;
+    read_data_page(data);
+    record_t *previous_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
+    record_t *current_record = get_current_record(data);
+    for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
+        if (current_record->key == record_key) {
+            return current_record;
+        }
+        // Traverse through
+        else if (record_exists(previous_record) && previous_record->key < record_key && record_key < current_record->key) {
+            if (previous_record->overflow_pointer == EMPTY_VALUE)
+                return NULL;
+            get_next_in_chain(overflow, previous_record->overflow_pointer);
+            current_record = overflow->page->records[overflow->page->record_index];
+            if (current_record->key == record_key) {
+                printf("INFO: Record found in overflow.\n");
+                return current_record;
+            }
+            while (current_record->overflow_pointer != EMPTY_VALUE) {
+                if (current_record->key == record_key) {
+                    printf("INFO: Record found in overflow.\n");
+                    return current_record;
+                } else if (current_record->key > record_key) {
+                    return NULL;
+                }
+                get_next_in_chain(overflow, current_record->overflow_pointer);
+                current_record = overflow->page->records[overflow->page->record_index];
+            }
+        }
+        if (current_record->key == record_key) {
+            return current_record;
+        } else if (current_record->key > record_key) {
+            return NULL;
+        } else if (current_record->key > record_key && i == RECORD_COUNT_PER_PAGE - 1) {
+            return NULL;
+        }
+        copy_record(current_record, previous_record);
+        current_record = get_next_record(data);
+    }
+
+    destroy_record(previous_record);
 }

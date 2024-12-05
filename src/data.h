@@ -70,7 +70,7 @@ void move_data_to_start(data_t *data);
 void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record);
 
 //
-void get_record(indexes_t *indexes, data_t *data, int key);
+record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int record_key);
 
 // Prints the contents of data.
 void print_data(data_t *data);

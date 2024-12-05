@@ -65,7 +65,9 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *ov
             int key;
             char *args = strtok(NULL, "");
             if (args != NULL && sscanf(args, "%d", &key) == 1) {
-                get_record(indexes, data, key);
+                record_t *record = find_record(indexes, data, overflow, key);
+                if (record != NULL)
+                    print_record(record);
             } else {
                 print_invalid_input_message(1);
             }

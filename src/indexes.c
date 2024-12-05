@@ -142,13 +142,13 @@ index_t *get_current_index(indexes_t *indexes) {
     return indexes->page->indexes[indexes->page->index_index];
 }
 
-int find_data_page_index(indexes_t *indexes, record_t *record) {
+int find_data_page_index(indexes_t *indexes, int record_key) {
     int data_page_index;
     move_indexes_to_start(indexes);
     index_t *previous_index = create_index(EMPTY_VALUE, EMPTY_VALUE);
     index_t *current_index = get_current_index(indexes);
     while (!is_indexes_at_end(indexes)) {
-        if (index_exists(previous_index) && current_index->key > record->key) {
+        if (index_exists(previous_index) && current_index->key > record_key) {
             data_page_index = previous_index->data_page_index;
             destroy_index(previous_index);
             return data_page_index;

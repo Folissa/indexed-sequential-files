@@ -7,7 +7,7 @@
 #include "data.h"
 
 // DONE: Record insert
-// TODO: Record read
+// DONE: Record read
 // DONE: File browsing (on demand (?), after each operation), so we can check where the record is (in the main area, or in the overflow area)
 // TODO: After each operation, the number of reads from, and writes to a file are printed out
 // DONE: Input implemented from the keyboard as an interactive program
@@ -23,29 +23,6 @@ int main() {
     insert_dummy_data(indexes, data, overflow);
     print_data(data);
     print_data(overflow);
-#ifndef DEBUG
-#define DEBUG
-    int index;
-    record_t *record; 
-    record = create_record(0, 1, 1, 1);
-    index = find_data_page_index(indexes, record);
-    destroy_record(record);
-    record = create_record(1, 1, 1, 1);
-    index = find_data_page_index(indexes, record);
-    destroy_record(record);
-    record = create_record(1000, 1, 1, 1);
-    index = find_data_page_index(indexes, record);
-    destroy_record(record);
-    record = create_record(1005, 1, 1, 1);
-    index = find_data_page_index(indexes, record);
-    destroy_record(record);
-    record = create_record(2000, 1, 1, 1);
-    index = find_data_page_index(indexes, record);
-    destroy_record(record);
-    record = create_record(2005, 1, 1, 1);
-    index = find_data_page_index(indexes, record);
-    destroy_record(record);
-#endif // DEBUG
     int exit = 0;
     int choice;
     while (!exit) {
