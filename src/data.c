@@ -236,6 +236,7 @@ void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow) {
 }
 
 void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record) {
+    // TODO: What if index starts at 2000, but we first insert 2001 and then 2000 data record?
     data->page_index = find_data_page_index(indexes, record->key);
     data->page->record_index = 0;
     read_data_page(data);
@@ -290,7 +291,8 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
             write_data_page(data);
         } else {
             // Add pointer to overflow record
-            append_overflow = update_chain(overflow, data->page->records[parent_record_index]->overflow_pointer, index_in_file, child);
+            append_overflow = update_chain(data, overflow, parent_record_index, index_in_file, child);
+            // append_overflow = update_chain(data, overflow, data->page->records[parent_record_index]->overflow_pointer, index_in_file, child);
         }
         if (append_overflow) {
             overflow->page_index = get_page_index(index_in_file);
@@ -303,41 +305,65 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
     }
 }
 
-int update_chain(data_t *overflow, int current_pointer, int record_pointer, record_t *record) {
+int update_chain(data_t *data, data_t *overflow, int parent_record_index, int record_pointer, record_t *record) {
+    // TODO: Refactor
+    int current_pointer = data->page->records[parent_record_index]->overflow_pointer;
     get_next_in_chain(overflow, current_pointer);
     // TODO: These could be uninitialized (SEGFAULT incoming)
     int previous_page_index, previous_record_index;
     int found_space = 0;
+    record_t *current_record = overflow->page->records[overflow->page->record_index];
     // Look for empty and valid pointer space
-    while (overflow->page->records[overflow->page->record_index]->overflow_pointer != EMPTY_VALUE) {
-        // We found a potential space to insert into
-        if (overflow->page->records[overflow->page->record_index]->key < record->key) {
+    while (current_record->overflow_pointer != EMPTY_VALUE) {
+        if (current_record->key < record->key) {
+            // We found a potential space to insert into
             previous_page_index = overflow->page_index;
             previous_record_index = overflow->page->record_index;
             found_space = 1;
         }
-        if (overflow->page->records[overflow->page->record_index]->key == record->key) {
+        if (current_record->key > record->key && !found_space) {
+            // We need to insert the record before a record, which is first in a chain
+            record->overflow_pointer = overflow->page_index * RECORD_COUNT_PER_PAGE;
+            current_record->overflow_pointer = EMPTY_VALUE;
+            write_data_page(overflow);
+            // Update data record pointer
+            data->page->records[parent_record_index]->overflow_pointer = record_pointer;
+            write_data_page(data);
+            return 1;
+        }
+        if (current_record->key == record->key) {
             printf("WARNING: Record with key %d already exists!\n", record->key);
             return 0;
         }
-        get_next_in_chain(overflow, overflow->page->records[overflow->page->record_index]->overflow_pointer);
-        // We need to insert a record between two different records
-        if (overflow->page->records[overflow->page->record_index]->key > record->key && found_space) {
+        get_next_in_chain(overflow, current_record->overflow_pointer);
+        current_record = overflow->page->records[overflow->page->record_index];
+        if (current_record->key > record->key && found_space) {
+            // We need to insert a record between two different records
             overflow->page_index = previous_page_index;
             overflow->page->record_index = previous_record_index;
             read_data_page(overflow);
-            record->overflow_pointer = overflow->page->records[overflow->page->record_index]->overflow_pointer;
+            record->overflow_pointer = current_record->overflow_pointer;
             break;
         } else {
             found_space = 0;
         }
     }
-    if (overflow->page->records[overflow->page->record_index]->key == record->key) {
+    if (current_record->key > record->key && !found_space) {
+        // We need to insert the record before a record, which is first in a chain
+        record->overflow_pointer = overflow->page_index * RECORD_COUNT_PER_PAGE;
+        current_record->overflow_pointer = EMPTY_VALUE;
+        write_data_page(overflow);
+        // Update data record pointer
+        data->page->records[parent_record_index]->overflow_pointer = record_pointer;
+        write_data_page(data);
+        return 1;
+    }
+    if (current_record->key == record->key) {
         printf("WARNING: Record with key %d already exists!\n", record->key);
         return 0;
     }
     // Insert the pointer
-    overflow->page->records[overflow->page->record_index]->overflow_pointer = record_pointer;
+    current_record->overflow_pointer = record_pointer;
     write_data_page(overflow);
     return 1;
 }

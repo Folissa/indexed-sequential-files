@@ -91,7 +91,7 @@ int get_page_index(int record_pointer);
 int get_record_index(int record_pointer);
 
 // Updates pointers in overflow.
-int update_chain(data_t *overflow, int current_pointer, int record_pointer, record_t *record);
+int update_chain(data_t *data, data_t *overflow, int parent_record_index, int record_pointer, record_t *record);
 
 // Loads a page based on where the next record is from the overflow.
 void get_next_in_chain(data_t *overflow, int pointer);
