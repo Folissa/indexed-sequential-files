@@ -20,7 +20,13 @@
         "array": "c",
         "string": "c",
         "string_view": "c",
-        "span": "c"
+        "span": "c",
+        "deque": "c",
+        "forward_list": "c",
+        "unordered_map": "c",
+        "unordered_set": "c",
+        "vector": "c",
+        "iterator": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/clang"
 }

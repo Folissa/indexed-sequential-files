@@ -30,8 +30,32 @@ void print_invalid_input_message(int invalid_format) {
 }
 
 void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflow) {
+    FILE *file= open_file(INPUT_FILENAME, "r");
+    char input[INPUT_BUFFER_SIZE];
+    while (fgets(input, sizeof(input), file)) {
+        input[strcspn(input, "\n")] = '\0';
+        char *command = strtok(input, " ");
+        if (command == NULL) {
+            print_invalid_input_message(0);
+            continue;
+        }
+        if (strcmp(command, "INSERT") == 0) {
+            int key, mass, specific_heat_capacity, temperature_change;
+            char *args = strtok(NULL, "");
+            if (args != NULL && sscanf(args, "%d %d %d %d", &key, &mass, &specific_heat_capacity, &temperature_change) == 4) {
+                record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change, EMPTY_VALUE);
+                insert_record(indexes, data, overflow, record);
+            } else {
+                print_invalid_input_message(1);
+            }
+        } else {
+            print_invalid_input_message(0);
+        }
+    }
+    close_file(file);
+    print_data(data);
+    print_data(overflow);
 }
-
 void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *overflow) {
     clear_input_buffer();
     char input[INPUT_BUFFER_SIZE];
