@@ -117,7 +117,6 @@ void read_data_page(data_t *data) {
 
 int is_data_at_end(data_t *data) {
     return data->page_index == data->number_of_pages && data->page->record_index == 0;
-    // return !(record_exists(data->page->records[data->page->record_index]));
 }
 
 // TODO: Cap this, so it doesn't add more if we are out of pages
@@ -176,12 +175,12 @@ void print_data(data_t *data) {
     int index_in_file = 0;
     int current_page_index = -1;
     if (strcmp(data->filename, DATA_FILENAME) == 0)
-        printf("----------------------------------------------------DATA------------------------------------------------------\n");
+        printf("--------------------------------------------------DATA--------------------------------------------------------\n");
     else if (strcmp(data->filename, OVERFLOW_FILENAME) == 0)
-        printf("----------------------------------------------------OVERFLOW--------------------------------------------------\n");
+        printf("--------------------------------------------------OVERFLOW----------------------------------------------------\n");
     while (!is_data_at_end(data)) {
         if (current_page_index != data->page_index) {
-            printf("----------------------------------------------------PAGE-%02d---------------------------------------------------\n", data->page_index);
+            printf("--------------------------------------------------PAGE-%02d-----------------------------------------------------\n", data->page_index);
             current_page_index = data->page_index;
         }
         printf("#%02d ", index_in_file);
@@ -263,7 +262,7 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
                 write_data_page(data);
             (data->number_of_records)++;
             break;
-        }            
+        }
         // Parent is the previous record
         else if ((record_exists(previous_record) && current_record->key > record->key)) {
             add_to_overflow(data, overflow, data->page->record_index - 1, record);
@@ -296,7 +295,6 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
     } else {
         // Add pointer to overflow record
         append_overflow = update_chain(data, overflow, parent_record_index, index_in_file, child);
-        // append_overflow = update_chain(data, overflow, data->page->records[parent_record_index]->overflow_pointer, index_in_file, child);
     }
     if (append_overflow) {
         overflow->page_index = get_page_index(index_in_file);
@@ -328,8 +326,6 @@ int update_chain(data_t *data, data_t *overflow, int parent_record_index, int re
         if (current_record->key > record->key && !found_space) {
             // We need to insert the record before a record, which is first in a chain
             record->overflow_pointer = current_pointer;
-            // record->overflow_pointer = overflow->page_index * RECORD_COUNT_PER_PAGE;
-            // current_record->overflow_pointer = EMPTY_VALUE;
             write_data_page(overflow);
             // Update data record pointer
             data->page->records[parent_record_index]->overflow_pointer = record_pointer;
@@ -396,8 +392,7 @@ int find_free_space(data_t *overflow) {
         // Empty space
         return index_in_file;
     } else {
-        // No more space
-        printf("WARNING: Overflow is full!\n");
+        // Overflow is full
         return ERROR_VALUE;
     }
 }
@@ -412,6 +407,7 @@ int get_record_index(int record_pointer) {
 
 record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int record_key) {
     // TODO: Refactor (task for students)
+    // TODO: Not working
     data->page_index = find_data_page_index(indexes, record_key);
     data->page->record_index = 0;
     read_data_page(data);
@@ -423,9 +419,10 @@ record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int re
         }
         // Traverse through
         else if (record_exists(previous_record) && previous_record->key < record_key && record_key < current_record->key) {
-            if (previous_record->overflow_pointer == EMPTY_VALUE)
+            if (previous_record->overflow_pointer == EMPTY_VALUE) {
                 destroy_record(previous_record);
                 return NULL;
+            }
             get_next_in_chain(overflow, previous_record->overflow_pointer);
             current_record = overflow->page->records[overflow->page->record_index];
             if (current_record->key == record_key) {
@@ -488,7 +485,7 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     int records_on_current_page = 0;
     int current_primary_record_offset = 0;
     while (processed_records != data->number_of_records + overflow->number_of_records) {
-        if (!is_in_overflow) { 
+        if (!is_in_overflow) {
             copy_record(get_by_pointer(data, current_primary_record_offset), current_record);
         }
         if (!record_exists(current_record)) {
@@ -515,8 +512,7 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
         if (overflow_pointer == EMPTY_VALUE) {
             current_primary_record_offset++;
             is_in_overflow = 0;
-        }
-        else {
+        } else {
             is_in_overflow = 1;
             overflow->page_index = get_page_index(overflow_pointer);
             overflow->page->record_index = get_record_index(overflow_pointer);

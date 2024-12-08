@@ -35,4 +35,6 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *ov
 // Prints a menu with input options to choose from.
 void print_menu();
 
+void print_data_and_overflow(data_t *data, data_t *overflow);
+
 #endif // INPUT_H
