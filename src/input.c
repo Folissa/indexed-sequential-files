@@ -45,11 +45,7 @@ void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflo
             if (args != NULL && sscanf(args, "%d %d %d %d", &key, &mass, &specific_heat_capacity, &temperature_change) == 4) {
                 record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change, EMPTY_VALUE);
                 insert_record(indexes, data, overflow, record);
-                #ifndef DDEBUG
-                #define DDEBUG
-                print_data(data);
-                print_data(overflow);
-                #endif // DDEBUG
+                destroy_record(record);
             } else {
                 print_invalid_input_message(1);
             }
@@ -87,6 +83,7 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *ov
             if (args != NULL && sscanf(args, "%d %d %d %d", &key, &mass, &specific_heat_capacity, &temperature_change) == 4) {
                 record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change, EMPTY_VALUE);
                 insert_record(indexes, data, overflow, record);
+                destroy_record(record);
             } else {
                 print_invalid_input_message(1);
             }

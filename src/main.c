@@ -49,5 +49,6 @@ int main() {
     };
     destroy_indexes(indexes);
     destroy_data(data);
+    destroy_data(overflow);
     return 0;
 }

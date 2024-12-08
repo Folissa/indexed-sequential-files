@@ -266,22 +266,12 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
         }            
         // Parent is the previous record
         else if ((record_exists(previous_record) && current_record->key > record->key)) {
-            int index_in_file = find_free_space(overflow);
-            if (index_in_file == ERROR_VALUE) { 
-                reorganise(indexes, data, overflow, ALPHA);
-                index_in_file = find_free_space(overflow);
-            }
-            add_to_overflow(index_in_file, data, overflow, data->page->record_index - 1, record);
+            add_to_overflow(data, overflow, data->page->record_index - 1, record);
             break;
         }
         // Parent is the current (last in the page) record
         else if (i == RECORD_COUNT_PER_PAGE - 1) {
-            int index_in_file = find_free_space(overflow);
-            if (index_in_file == ERROR_VALUE) { 
-                reorganise(indexes, data, overflow, ALPHA);
-                index_in_file = find_free_space(overflow);
-            }
-            add_to_overflow(index_in_file, data, overflow, data->page->record_index, record);
+            add_to_overflow(data, overflow, data->page->record_index, record);
             break;
         }
         record_index = data->page->record_index;
@@ -289,10 +279,13 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
         current_record = get_next_record(data);
     }
     destroy_record(previous_record);
+    if (find_free_space(overflow) == ERROR_VALUE)
+        reorganise(indexes, data, overflow, ALPHA);
     return 1;
 }
 
-void add_to_overflow(int index_in_file, data_t *data, data_t *overflow, int parent_record_index, record_t *child) {
+void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child) {
+    int index_in_file = find_free_space(overflow);
     // Add record to the index_in_file
     int append_overflow = 1;
     // Update the pointer
@@ -491,14 +484,12 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     record_t *current_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
     int processed_records = 0;
     int is_in_overflow = 0;
-    //
     int current_page = 0;
     int records_on_current_page = 0;
-    //
     int current_primary_record_offset = 0;
     while (processed_records != data->number_of_records + overflow->number_of_records) {
-        if (!is_in_overflow) {
-            current_record = get_by_pointer(data, current_primary_record_offset);
+        if (!is_in_overflow) { 
+            copy_record(get_by_pointer(data, current_primary_record_offset), current_record);
         }
         if (!record_exists(current_record)) {
             current_primary_record_offset++;
@@ -509,8 +500,10 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
             records_on_current_page = 0;
         }
         if (records_on_current_page == 0) {
-            add_index(temp_indexes, create_index(current_page, current_record->key));
+            index_t *index = create_index(current_page, current_record->key);
+            add_index(temp_indexes, index);
             write_indexes_page(temp_indexes);
+            destroy_index(index);
         }
         temp_data->page_index = current_page;
         read_data_page(temp_data);
@@ -528,10 +521,10 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
             overflow->page_index = get_page_index(overflow_pointer);
             overflow->page->record_index = get_record_index(overflow_pointer);
             read_data_page(overflow);
-            current_record = get_current_record(overflow);
+            copy_record(get_current_record(overflow), current_record);
         }
     }
-    //
+    destroy_record(current_record);
     temp_data->number_of_pages = current_page + 1;
     data->number_of_pages = temp_data->number_of_pages;
     data->number_of_records = processed_records;
@@ -542,7 +535,7 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     rename_file(TEMP_DATA_FILENAME, DATA_FILENAME);
     rename_file(TEMP_OVERFLOW_FILENAME, OVERFLOW_FILENAME);
     rename_file(TEMP_INDEXES_FILENAME, INDEXES_FILENAME);
-    destroy_record(current_record);
     destroy_data(temp_data);
+    destroy_data(temp_overflow);
     destroy_indexes(temp_indexes);
 }

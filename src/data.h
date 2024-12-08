@@ -81,9 +81,9 @@ void print_data(data_t *data);
 void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
 
 // Adds a record to overflow.
-void add_to_overflow(int index_in_file, data_t *data, data_t *overflow, int parent_record_index, record_t *child);
+void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child);
 
-// Searches for an empty space in overflow and returns the found position.
+// Searches for an empty space in overflow and returns the found position. Returns ERROR_VALUE if no space is found.
 int find_free_space(data_t *overflow);
 
 // Returns page index where the record is.
