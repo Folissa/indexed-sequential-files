@@ -29,4 +29,6 @@ void delete_file(char *filename);
 // Copy contents of source file to the destination file.
 void copy_file(char *source_filename, char *destination_filename);
 
+void rename_file(const char *old_name, const char *new_name);
+
 #endif // FILE_H

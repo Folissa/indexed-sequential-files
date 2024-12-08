@@ -59,3 +59,9 @@ void copy_file(char *source_filename, char *destination_filename) {
     close_file(source_file);
     close_file(destination_file);
 }
+
+void rename_file(const char *old_name, const char *new_name) {
+    if (rename(old_name, new_name) != 0) {
+        perror("Error renaming file");
+    }
+}

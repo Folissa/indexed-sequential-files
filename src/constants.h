@@ -10,8 +10,10 @@
 #define INT_WIDTH 5
 #define EMPTY_VALUE -1
 #define NUMBER_OF_DATA_PAGES 3
-#define NUMBER_OF_OVERFLOW_PAGES 2
+#define NUMBER_OF_OVERFLOW_PAGES 1
 #define ERROR_VALUE -1
+#define ALPHA 0.5
+#define OVERFLOW_TO_DATA_PAGES_RATIO 0.5
 
 #define FIRST_PARAMETER_OFFSET 0
 #define SECOND_PARAMETER_OFFSET 1
@@ -21,5 +23,8 @@
 
 #define INPUT_FILENAME "input.txt"
 #define INDEXES_FILENAME "indexes.txt"
+#define TEMP_INDEXES_FILENAME "temp-indexes.txt"
 #define DATA_FILENAME "data.txt"
+#define TEMP_DATA_FILENAME "temp-data.txt"
 #define OVERFLOW_FILENAME "overflow.txt"
+#define TEMP_OVERFLOW_FILENAME "temp-overflow.txt"

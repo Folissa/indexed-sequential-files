@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "constants.h"
 #include "data_page.h"
@@ -18,6 +19,7 @@ typedef struct {
     data_page_t *page;
     int writes;
     int reads;
+    int number_of_records;
     int number_of_pages;
 } data_t;
 
@@ -67,7 +69,7 @@ void reset_data_page(data_t *data);
 void move_data_to_start(data_t *data);
 
 // Inserts record into a valid space in data or overflow.
-void insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record);
+int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record);
 
 //
 record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int record_key);
@@ -79,7 +81,7 @@ void print_data(data_t *data);
 void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow);
 
 // Adds a record to overflow.
-void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child);
+void add_to_overflow(int index_in_file, data_t *data, data_t *overflow, int parent_record_index, record_t *child);
 
 // Searches for an empty space in overflow and returns the found position.
 int find_free_space(data_t *overflow);
@@ -95,5 +97,7 @@ int update_chain(data_t *data, data_t *overflow, int parent_record_index, int re
 
 // Loads a page based on where the next record is from the overflow.
 void get_next_in_chain(data_t *overflow, int pointer);
+
+void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha);
 
 #endif // DATA_H
