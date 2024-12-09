@@ -55,6 +55,7 @@ void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflo
                 record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change, EMPTY_VALUE);
                 insert_record(indexes, data, overflow, record);
                 destroy_record(record);
+                print_data_and_overflow(data, overflow);
             } else {
                 print_invalid_input_message(1);
             }
