@@ -116,15 +116,15 @@ index_t *get_next_index(indexes_t *indexes) {
 }
 
 void insert_dummy_indexes(indexes_t *indexes) {
-    index_t *index = create_index(0, 450);
+    index_t *index = create_index(0, 0);
     add_index(indexes, index);
     destroy_index(index);
 
-    index = create_index(1, 1000);
+    index = create_index(1, 333);
     add_index(indexes, index);
     destroy_index(index);
 
-    index = create_index(2, 2000);
+    index = create_index(2, 666);
     add_index(indexes, index);
     destroy_index(index);
 

@@ -41,6 +41,8 @@ void print_data_and_overflow(data_t *data, data_t *overflow) {
 void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflow) {
     FILE *file = open_file(INPUT_FILENAME, "r");
     char input[INPUT_BUFFER_SIZE];
+    double mean_saves = 0;
+    double mean_loads = 0;
     while (fgets(input, sizeof(input), file)) {
         input[strcspn(input, "\n")] = '\0';
         char *command = strtok(input, " ");
@@ -53,9 +55,19 @@ void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflo
             char *args = strtok(NULL, "");
             if (args != NULL && sscanf(args, "%d %d %d %d", &key, &mass, &specific_heat_capacity, &temperature_change) == 4) {
                 record_t *record = create_record(key, mass, specific_heat_capacity, temperature_change, EMPTY_VALUE);
+                data->reads = 0;
+                data->writes = 0;
+                overflow->reads = 0;
+                overflow->writes = 0;
                 insert_record(indexes, data, overflow, record);
+                if (mean_saves == 0) {
+                    mean_saves = data->writes + overflow->writes;
+                    mean_loads = data->reads + overflow->reads;
+                } else {
+                    mean_saves = (mean_saves + data->writes + overflow->writes) / 2;
+                    mean_loads = (mean_loads + data->reads + overflow->reads) / 2;
+                }
                 destroy_record(record);
-                print_data_and_overflow(data, overflow);
             } else {
                 print_invalid_input_message(1);
             }
@@ -65,6 +77,8 @@ void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflo
     }
     close_file(file);
     print_data_and_overflow(data, overflow);
+    printf("Mean saves: %f\n", mean_saves);
+    printf("Mean loads: %f\n", mean_loads);
 }
 void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *overflow) {
     clear_input_buffer();
