@@ -47,8 +47,6 @@ void write_indexes_page(indexes_t *indexes) {
     FILE *file = open_file(indexes->filename, "r+");
     for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++) {
         int index_index = indexes->page_index * INDEXES_COUNT_PER_PAGE + i;
-        if (!index_exists(indexes->page->indexes[i]))
-            break;
         write_index(file, indexes->page->indexes[i], index_index);
         initialize_index(indexes->page->indexes[i], EMPTY_VALUE, EMPTY_VALUE);
     }
@@ -116,7 +114,7 @@ index_t *get_next_index(indexes_t *indexes) {
 }
 
 void insert_dummy_indexes(indexes_t *indexes) {
-    index_t *index = create_index(0, 0);
+    index_t *index = create_index(0, 450);
     add_index(indexes, index);
     destroy_index(index);
 
@@ -142,26 +140,33 @@ index_t *get_current_index(indexes_t *indexes) {
     return indexes->page->indexes[indexes->page->index_index];
 }
 
-int find_data_page_index(indexes_t *indexes, int record_key) {
+index_t *find_data_page_index(indexes_t *indexes, int record_key) {
     int data_page_index;
     move_indexes_to_start(indexes);
     index_t *previous_index = create_index(EMPTY_VALUE, EMPTY_VALUE);
     index_t *current_index = get_current_index(indexes);
+    index_t *result_index = create_index(EMPTY_VALUE, EMPTY_VALUE);
     while (!is_indexes_at_end(indexes)) {
         if (index_exists(previous_index) && current_index->key > record_key) {
-            data_page_index = previous_index->data_page_index;
+            copy_index(previous_index, result_index);
+            // data_page_index = previous_index->data_page_index;
             destroy_index(previous_index);
-            return data_page_index;
+            (indexes->page->index_index)--;
+            return result_index;
+            // return data_page_index;
         }
         copy_index(current_index, previous_index);
         current_index = get_next_index(indexes);
     }
     if (index_exists(previous_index))
-        data_page_index = previous_index->data_page_index;
-    else 
-        data_page_index = current_index->data_page_index;
+        copy_index(previous_index, result_index);
+        // data_page_index = previous_index->data_page_index;
+    else
+        copy_index(current_index, result_index);
+        // data_page_index = current_index->data_page_index;
     destroy_index(previous_index);
-    return data_page_index;
+    return result_index;
+    // return data_page_index;
 }
 
 int is_indexes_at_end(indexes_t *indexes) {

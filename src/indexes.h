@@ -54,7 +54,7 @@ void insert_dummy_indexes(indexes_t *indexes);
 void move_indexes_to_start(indexes_t *indexes);
 
 // Returns the index of a page that can hold the record, based on the record's key.
-int find_data_page_index(indexes_t *indexes, int record_key);
+index_t *find_data_page_index(indexes_t *indexes, int record_key);
 
 // Check if there are no more indexes to read from the data.
 int is_indexes_at_end(indexes_t *indexes);

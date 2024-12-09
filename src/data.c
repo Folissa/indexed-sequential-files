@@ -236,22 +236,32 @@ void insert_dummy_data(indexes_t *indexes, data_t *data, data_t *overflow) {
 
 int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *record) {
     // TODO: What if index starts at 2000, but we first insert 2001 and then 2000 data record?
-    data->page_index = find_data_page_index(indexes, record->key);
+    index_t *index = find_data_page_index(indexes, record->key);
+    data->page_index = index->data_page_index;
     data->page->record_index = 0;
     read_data_page(data);
     int record_index = 0;
     record_t *previous_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
     record_t *current_record = get_current_record(data);
-
-    if (record_exists(current_record) && record->key < current_record->key) {
-        // TODO: Edgecase
-        return 0;
+    if (current_record->key > record->key){
+        // TODO: Fix indexes
+        index->key = record->key;
+        indexes->page->indexes[indexes->page->index_index] = index;
+        write_indexes_page(indexes);
+        // TODO: Check if data is always written
+        data->page->records[data->page->record_index] = record;
+        add_to_overflow(data, overflow, data->page->record_index, current_record);
+        destroy_record(previous_record);
+        destroy_index(index);
+        if (find_free_space(overflow) == ERROR_VALUE)
+            reorganise(indexes, data, overflow, ALPHA);
+        return 1;
     }
-
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
         if (current_record->key == record->key) {
             printf("WARNING: Record with key %d already exists!\n", current_record->key);
             destroy_record(previous_record);
+            destroy_index(index);
             return 0;
         }
         // Add record when there is an empty space
@@ -277,10 +287,11 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
         copy_record(current_record, previous_record);
         current_record = get_next_record(data);
     }
+    destroy_index(index);
     destroy_record(previous_record);
     if (find_free_space(overflow) == ERROR_VALUE)
         reorganise(indexes, data, overflow, ALPHA);
-    return 1;
+    return 0;
 }
 
 void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child) {
@@ -408,7 +419,9 @@ int get_record_index(int record_pointer) {
 record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int record_key) {
     // TODO: Refactor (task for students)
     // TODO: Not working
-    data->page_index = find_data_page_index(indexes, record_key);
+    index_t *index = find_data_page_index(indexes, record_key);
+    data->page_index = index->data_page_index;
+    destroy_index(index);
     data->page->record_index = 0;
     read_data_page(data);
     record_t *previous_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
