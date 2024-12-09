@@ -502,6 +502,7 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
         if (!is_in_overflow) {
             copy_record(get_by_pointer(data, current_primary_record_offset), current_record);
         }
+        if (current_record->key == 80) raise(SIGTRAP);
         if (!record_exists(current_record)) {
             current_primary_record_offset++;
             continue;
@@ -538,6 +539,7 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     temp_data->number_of_pages = current_page + 1;
     data->number_of_pages = temp_data->number_of_pages;
     data->number_of_records = processed_records;
+    overflow->number_of_pages = temp_overflow->number_of_pages;
     overflow->number_of_records = 0;
     delete_file(DATA_FILENAME);
     delete_file(OVERFLOW_FILENAME);
