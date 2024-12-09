@@ -20,7 +20,7 @@ int main() {
     data_t *data = create_data(DATA_FILENAME, NUMBER_OF_DATA_PAGES);
     data_t *overflow = create_data(OVERFLOW_FILENAME, NUMBER_OF_OVERFLOW_PAGES);
     insert_dummy_indexes(indexes);
-    insert_dummy_data(indexes, data, overflow);
+    // insert_dummy_data(indexes, data, overflow);
     print_data_and_overflow(data, overflow);
     int exit = 0;
     int choice;
@@ -46,8 +46,8 @@ int main() {
             break;
         }
     };
-    printf("Writes: %d\n", data->writes + overflow->writes + indexes->writes);
-    printf("Reads: %d\n", data->reads + overflow->reads + indexes->reads);
+    printf("Writes: %d\n", data->writes + overflow->writes);
+    printf("Reads: %d\n", data->reads + overflow->reads);
     destroy_indexes(indexes);
     destroy_data(data);
     destroy_data(overflow);
