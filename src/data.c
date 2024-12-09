@@ -244,13 +244,14 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
     record_t *previous_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
     record_t *current_record = get_current_record(data);
     if (current_record->key > record->key){
-        // TODO: Fix indexes
         index->key = record->key;
-        indexes->page->indexes[indexes->page->index_index] = index;
+        copy_index(index, indexes->page->indexes[indexes->page->index_index]);
         write_indexes_page(indexes);
-        // TODO: Check if data is always written
-        data->page->records[data->page->record_index] = record;
-        add_to_overflow(data, overflow, data->page->record_index, current_record);
+        record_t temp;
+        copy_record(record, &temp);
+        copy_record(current_record, record);
+        copy_record(&temp, current_record);
+        add_to_overflow(data, overflow, data->page->record_index, record);
         destroy_record(previous_record);
         destroy_index(index);
         if (find_free_space(overflow) == ERROR_VALUE)
