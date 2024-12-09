@@ -366,7 +366,7 @@ int update_chain(data_t *data, data_t *overflow, int parent_record_index, int re
     }
     if (current_record->key > record->key && !found_space) {
         // We need to insert the record before a record, which is first in a chain
-        record->overflow_pointer = overflow->page->record_index;
+        record->overflow_pointer = (overflow->page->record_index + (overflow->page_index * RECORD_COUNT_PER_PAGE));
         write_data_page(overflow);
         // Update data record pointer
         data->page->records[parent_record_index]->overflow_pointer = record_pointer;
@@ -502,7 +502,6 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
         if (!is_in_overflow) {
             copy_record(get_by_pointer(data, current_primary_record_offset), current_record);
         }
-        if (current_record->key == 80) raise(SIGTRAP);
         if (!record_exists(current_record)) {
             current_primary_record_offset++;
             continue;
