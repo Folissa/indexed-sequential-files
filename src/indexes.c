@@ -47,6 +47,8 @@ void write_indexes_page(indexes_t *indexes) {
     FILE *file = open_file(indexes->filename, "r+");
     for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++) {
         int index_index = indexes->page_index * INDEXES_COUNT_PER_PAGE + i;
+        if (!index_exists(indexes->page->indexes[i]))
+            break;
         write_index(file, indexes->page->indexes[i], index_index);
         initialize_index(indexes->page->indexes[i], EMPTY_VALUE, EMPTY_VALUE);
     }
@@ -151,7 +153,7 @@ index_t *find_data_page_index(indexes_t *indexes, int record_key) {
             copy_index(previous_index, result_index);
             // data_page_index = previous_index->data_page_index;
             destroy_index(previous_index);
-            (indexes->page->index_index)--;
+            // (indexes->page->index_index)--;
             return result_index;
             // return data_page_index;
         }

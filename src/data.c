@@ -245,7 +245,8 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
     record_t *current_record = get_current_record(data);
     if (current_record->key > record->key){
         index->key = record->key;
-        copy_index(index, indexes->page->indexes[indexes->page->index_index]);
+        int index_index = get_page_index(index->data_page_index);
+        copy_index(index, indexes->page->indexes[index_index]);
         write_indexes_page(indexes);
         record_t temp;
         copy_record(record, &temp);
