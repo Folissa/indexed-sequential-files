@@ -49,8 +49,6 @@ int main() {
             break;
         }
     };
-    printf("Writes: %d\n", data->writes + overflow->writes);
-    printf("Reads: %d\n", data->reads + overflow->reads);
     destroy_indexes(indexes);
     destroy_data(data);
     destroy_data(overflow);

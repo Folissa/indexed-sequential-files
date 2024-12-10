@@ -246,7 +246,9 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
     record_t *current_record = get_current_record(data);
     if (current_record->key > record->key){
         index->key = record->key;
-        int index_index = get_page_index(index->data_page_index);
+        // TODO: Fix
+        int index_index = get_record_index(index->data_page_index);
+        //int index_index = get_page_index(index->data_page_index);
         copy_index(index, indexes->page->indexes[index_index]);
         write_indexes_page(indexes);
         record_t temp;
@@ -254,10 +256,10 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
         copy_record(current_record, record);
         copy_record(&temp, current_record);
         add_to_overflow(data, overflow, data->page->record_index, record);
+        if (RECORD_COUNT_PER_PAGE * overflow->number_of_pages == overflow->number_of_records)
+            reorganise(indexes, data, overflow, ALPHA);
         destroy_record(previous_record);
         destroy_index(index);
-        if (find_free_space(overflow) == ERROR_VALUE)
-            reorganise(indexes, data, overflow, ALPHA);
         return 1;
     }
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
@@ -290,10 +292,10 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
         copy_record(current_record, previous_record);
         current_record = get_next_record(data);
     }
+    if (RECORD_COUNT_PER_PAGE * overflow->number_of_pages == overflow->number_of_records)
+        reorganise(indexes, data, overflow, ALPHA);
     destroy_index(index);
     destroy_record(previous_record);
-    if (find_free_space(overflow) == ERROR_VALUE)
-        reorganise(indexes, data, overflow, ALPHA);
     return 0;
 }
 
@@ -487,6 +489,8 @@ record_t *get_by_pointer(data_t *data, int pointer) {
 }
 
 void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha) {
+    int temp_reads_data = data->reads;
+    int temp_reads_overflow = overflow->reads;
     int max_record_count_per_page = floor(RECORD_COUNT_PER_PAGE * alpha);
     // TODO: max_record_count_per_page can be 0 - exception, check if double conversion is needed
     int number_of_data_pages = ceil((double)(data->number_of_records + overflow->number_of_records) / max_record_count_per_page);
@@ -553,4 +557,6 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     destroy_data(temp_data);
     destroy_data(temp_overflow);
     destroy_indexes(temp_indexes);
+    data->reads = temp_reads_data;
+    overflow->reads = temp_reads_overflow;
 }
