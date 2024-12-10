@@ -327,7 +327,9 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
 int update_chain(data_t *data, data_t *overflow, int parent_record_index, int record_pointer, record_t *record) {
     // TODO: Refactor
     int current_pointer = data->page->records[parent_record_index]->overflow_pointer;
-    get_next_in_chain(overflow, current_pointer);
+    overflow->page_index = get_page_index(current_pointer);
+    overflow->page->record_index = get_record_index(current_pointer);
+    read_data_page(overflow);
     // TODO: These could be uninitialized (SEGFAULT incoming)
     int previous_page_index, previous_record_index;
     int found_space = 0;
@@ -391,9 +393,11 @@ int update_chain(data_t *data, data_t *overflow, int parent_record_index, int re
 
 void get_next_in_chain(data_t *overflow, int pointer) {
     // TODO: Load the page where the record is (check if the load is currently loaded to not load twice the same page)
-    overflow->page_index = get_page_index(pointer);
+    if (overflow->page_index != get_page_index(pointer)) {
+        overflow->page_index = get_page_index(pointer);
+        read_data_page(overflow);
+    }
     overflow->page->record_index = get_record_index(pointer);
-    read_data_page(overflow);
 }
 
 int find_free_space(data_t *overflow) {
