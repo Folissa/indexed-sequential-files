@@ -33,11 +33,10 @@ void copy_record(record_t *source, record_t *destination) {
 }
 
 void print_record(record_t *record) {
-    char format[50] = "";
+    char format[INPUT_BUFFER_SIZE] = "";
     for (int i = 0; i < INT_WIDTH; i++) {
         strcat(format, "#");
     }
-
     if (record_exists(record)) {
         printf("KEY: %*d, MASS: %*d, SPECIFIC_HEAT_CAPACITY: %*d, TEMPERATURE_CHANGE: %*d, ",
             INT_WIDTH, record->key,

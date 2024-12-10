@@ -59,4 +59,6 @@ index_t *find_data_page_index(indexes_t *indexes, int record_key);
 // Check if there are no more indexes to read from the data.
 int is_indexes_at_end(indexes_t *indexes);
 
+void print_indexes(indexes_t *indexes);
+
 #endif // INDEXES_H

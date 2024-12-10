@@ -174,3 +174,42 @@ index_t *find_data_page_index(indexes_t *indexes, int record_key) {
 int is_indexes_at_end(indexes_t *indexes) {
     return !(index_exists(indexes->page->indexes[indexes->page->index_index]));
 }
+
+void print_indexes(indexes_t *indexes) {
+    // Remember all the values
+    int temp_page_index = indexes->page_index;
+    int temp_index_index = indexes->page->index_index;
+    indexes_page_t *temp_page = create_indexes_page();
+    for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++)
+        copy_index(indexes->page->indexes[i], temp_page->indexes[i]);
+    int temp_writes = indexes->writes;
+    int temp_reads = indexes->reads;
+    // Print out all the indexes in indexes
+    indexes->page_index = 0;
+    indexes->page->index_index = 0;
+    read_indexes_page(indexes);
+    index_t *index = get_current_index(indexes);
+    int index_in_file = 0;
+    int current_page_index = -1;
+    printf("======================================\n");
+    printf("---------------INDEXES----------------\n");
+    while (!is_indexes_at_end(indexes)) {
+        if (current_page_index != indexes->page_index) {
+            printf("---------------PAGE-%02d----------------\n", indexes->page_index);
+            current_page_index = indexes->page_index;
+        }
+        printf("#%02d ", index_in_file);
+        print_index(index);
+        index_in_file++;
+        index = get_next_index(indexes);
+    }
+    printf("======================================\n");
+    // Recover all the values
+    indexes->page_index = temp_page_index;
+    indexes->page->index_index = temp_index_index;
+    for (int i = 0; i < INDEXES_COUNT_PER_PAGE; i++)
+        copy_index(temp_page->indexes[i], indexes->page->indexes[i]);
+    indexes->writes = temp_writes;
+    indexes->reads = temp_reads;
+    destroy_indexes_page(temp_page);
+}

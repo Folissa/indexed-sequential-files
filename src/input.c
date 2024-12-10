@@ -76,6 +76,7 @@ void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflo
         }
     }
     close_file(file);
+    print_indexes(indexes);
     print_data_and_overflow(data, overflow);
     printf("Mean saves: %f\n", mean_saves);
     printf("Mean loads: %f\n", mean_loads);
@@ -133,6 +134,7 @@ void input_operations_from_keyboard(indexes_t *indexes, data_t *data, data_t *ov
             print_invalid_input_message(0);
             continue;
         }
+        print_indexes(indexes);
         print_data_and_overflow(data, overflow);
     }
 }

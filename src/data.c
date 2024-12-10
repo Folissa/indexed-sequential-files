@@ -15,6 +15,7 @@ void initialize_data(data_t *data, char *filename, int number_of_pages) {
     data->reads = 0;
     data->number_of_records = 0;
     data->number_of_pages = number_of_pages;
+    data->last_written_page_index = EMPTY_VALUE;
 }
 
 void destroy_data(data_t *data) {
@@ -316,6 +317,7 @@ void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, re
         int page_was_written = add_record(overflow, child);
         if (!page_was_written)
             write_data_page(overflow);
+        overflow->last_written_page_index = overflow->page_index;
         (overflow->number_of_records)++;
     }
 }
@@ -340,6 +342,7 @@ int update_chain(data_t *data, data_t *overflow, int parent_record_index, int re
             // We need to insert the record before a record, which is first in a chain
             record->overflow_pointer = current_pointer;
             write_data_page(overflow);
+            overflow->last_written_page_index = overflow->page_index;
             // Update data record pointer
             data->page->records[parent_record_index]->overflow_pointer = record_pointer;
             write_data_page(data);
@@ -359,6 +362,7 @@ int update_chain(data_t *data, data_t *overflow, int parent_record_index, int re
             record->overflow_pointer = overflow->page->records[overflow->page->record_index]->overflow_pointer;
             overflow->page->records[overflow->page->record_index]->overflow_pointer = record_pointer;
             write_data_page(overflow);
+            overflow->last_written_page_index = overflow->page_index;
             return 1;
         } else {
             found_space = 0;
