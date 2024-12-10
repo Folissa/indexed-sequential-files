@@ -68,10 +68,6 @@ void load_operations_from_file(indexes_t *indexes, data_t *data, data_t *overflo
                     mean_loads = (mean_loads + data->reads + overflow->reads) / 2;
                 }
                 destroy_record(record);
-                print_indexes(indexes);
-                print_data_and_overflow(data, overflow);
-                printf("Writes: %d\n", data->writes + overflow->writes);
-                printf("Reads: %d\n", data->reads + overflow->reads);
             } else {
                 print_invalid_input_message(1);
             }

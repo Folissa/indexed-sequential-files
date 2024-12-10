@@ -1,7 +1,7 @@
 #pragma once
 
 #define RECORD_PARAMETERS_COUNT (sizeof(record_t) / sizeof(int))
-#define RECORD_COUNT_PER_PAGE 10
+#define RECORD_COUNT_PER_PAGE 4
 #define INDEX_PARAMETERS_COUNT (sizeof(index_t) / sizeof(int))
 #define INDEXES_COUNT_PER_PAGE RECORD_COUNT_PER_PAGE
 
@@ -12,7 +12,7 @@
 #define NUMBER_OF_DATA_PAGES 3
 #define NUMBER_OF_OVERFLOW_PAGES 1
 #define ERROR_VALUE -1
-#define ALPHA 0.6
+#define ALPHA 0.8
 #define OVERFLOW_TO_DATA_PAGES_RATIO 0.25
 
 #define FIRST_PARAMETER_OFFSET 0

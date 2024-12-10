@@ -437,6 +437,7 @@ record_t *find_record(indexes_t *indexes, data_t *data, data_t *overflow, int re
     destroy_index(index);
     data->page->record_index = 0;
     read_data_page(data);
+    read_data_page(overflow);
     record_t *previous_record = create_record(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE);
     record_t *current_record = get_current_record(data);
     for (int i = 0; i < RECORD_COUNT_PER_PAGE; i++) {
@@ -495,8 +496,6 @@ record_t *get_by_pointer(data_t *data, int pointer) {
 }
 
 void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha) {
-    int temp_reads_data = data->reads;
-    int temp_reads_overflow = overflow->reads;
     int max_record_count_per_page = floor(RECORD_COUNT_PER_PAGE * alpha);
     // TODO: max_record_count_per_page can be 0 - exception, check if double conversion is needed
     int number_of_data_pages = ceil((double)(data->number_of_records + overflow->number_of_records) / max_record_count_per_page);
@@ -564,6 +563,4 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     destroy_data(temp_data);
     destroy_data(temp_overflow);
     destroy_indexes(temp_indexes);
-    data->reads = temp_reads_data;
-    overflow->reads = temp_reads_overflow;
 }

@@ -1,0 +1,228 @@
+\documentclass{article}
+
+\usepackage{listings}
+\usepackage{svg}
+\usepackage{adjustbox}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage[section]{placeins}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\renewcommand{\figurename}{Rys.}
+\renewcommand\tablename{Tabela}
+
+
+\geometry{a4paper,total={170mm,257mm},left=20mm,top=20mm}
+\setcounter{tocdepth}{2}
+\title{Indeksowa organizacja pliku}
+\author{Anna Berkowska}
+\date{9 grudnia 2024}
+
+\begin{document}
+    \maketitle
+    \section*{Wstęp}
+    \addcontentsline{toc}{section}{Wstęp}
+
+    Do zrealizowania projektu wybrałam indeksowo-sekwencyjną implementację indeksowej organizacji pliku.
+    Zaimplementowałam ją przy użyciu języka C. Wylosowany przeze mnie rekord zawiera: masę, ciepło właściwe oraz różnicę temperatur.
+
+    \section*{Indeksowo-sekwencyjna organizacja pliku}
+    \addcontentsline{toc}{section}{Indeksowo-sekwencyjna organizacja pliku}
+
+    Indeksowo-sekwencyjna organizacja pliku polega na przechowywaniu rekordów w pliku, gdzie każdy rekord ma swój unikalny klucz.
+    Rekordy w stronach (w \texttt{data}) posortowane są rosnąco.
+    Aby nie zaburzyć rosnącego charakteru wartości kluczy rekordów, jeżeli nie ma odpowiedniego miejsca dla wstawianego rekordu,
+    to dodawany jest on do \texttt{overflow}. Gdy \texttt{overflow} jest pełne, wykonujemy \texttt{reorganise}, które ma za zadanie przenieść rekordy z overflow
+    do stron pliku (\texttt{data}).
+
+    \section*{Szczegóły implementacji}
+    \addcontentsline{toc}{section}{Szczegóły implementacji}
+
+    \subsection*{Format plików}
+    \addcontentsline{toc}{subsection}{Format plików}
+
+    Program działa na trzech plikach: data.txt, overflow.txt i indexes.txt. 
+    Każda dana w plikach składa się z INT\_WIDTH znaków (bajtów).
+    Pliki data.txt oraz overflow.txt mają identyczną strukturę. Znajdują się w nich strony z rekordami.
+    Przykładowy plik data.txt, może wyglądać następująco:
+    \begin{lstlisting}
+        000600000100002000030000000070000010000200003-0001
+        -0001-0001-0001-0001-0001-0001-0001-0001-0001-0001
+    \end{lstlisting}
+    \noindent Jest on złożony z czterech rekordów (jedna strona), gdzie każdy z nich składa się z odpowiednio klucza, masy, ciepła właściwego, różnicy temperatur oraz wskaźnika do \texttt{overflow}.
+    Wartości \texttt{-0001} oznaczają pusty element.
+    Przykładowy plik overflow.txt, może wyglądać następująco:
+    \begin{lstlisting} 
+        000680007800003000010000100069000010000200009-0001
+        -0001-0001-0001-0001-0001-0001-0001-0001-0001-0001
+    \end{lstlisting}
+    Jego struktura jest identyczna jak w data.txt. \\
+    Plik indexes.txt różni się od dwóch pozostałych. Składa się on z indeksów, a nie z rekordów.
+    Każdy indeks zawiera indeks strony \texttt{data} oraz klucz, od którego ta strona się zaczyna.
+    Przykładowy plik indexes.txt, może wyglądać następująco:
+    \begin{lstlisting}
+        000000000000001003330000200666
+    \end{lstlisting}
+    Składa się on z trzech indeksów.
+    
+    \subsection*{Zapis do pliku}
+    \addcontentsline{toc}{subsection}{Zapis do pliku}
+
+    Zapis do pliku następuje poprzez ustawienie się na odpowiednim bajcie w pliku przy użyciu funkcji \texttt{fseek()}, dzięki offsetowi strony, i zapis całego bloku (strony) do pliku taśmy.
+    Zwiększany jest wtedy licznik zapisów do taśmy.
+
+    \subsection*{Odczyt z pliku}
+    \addcontentsline{toc}{subsection}{Odczyt z pliku}
+
+    Odczyt z pliku następuje przez odczytanie całego bloku (strony) do pamięci programu z danego pliku taśmy. Strona ta pobierana jest dzięki użyciu \texttt{fseek()} i podaniu offsetu strony.
+    Zwiększany jest wtedy licznik odczytów z taśmy.
+
+    \subsection*{Działanie programu}
+    \addcontentsline{toc}{subsection}{Działanie programu}
+
+    Program zaczyna się od wylistowania plików: indexes.txt, data.txt i overflow.txt. Wypisuje on też możliwe operacje, czyli odczyt komend z pliku, lub z klawiatury.
+    Na końcu podaje znak zachęty do wyboru opcji wczytania danych.
+
+    \begin{lstlisting}[basicstyle=\ttfamily\fontsize{6}{8}\selectfont, breaklines=true]
+======================================
+---------------INDEXES----------------
+---------------PAGE-00----------------
+#00 DATA_PAGE_INDEX:     0, KEY:     0
+#01 DATA_PAGE_INDEX:     1, KEY:   333
+#02 DATA_PAGE_INDEX:     2, KEY:   666
+======================================
+==============================================================================================================
+--------------------------------------------------DATA--------------------------------------------------------
+--------------------------------------------------PAGE-00-----------------------------------------------------
+#00 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#01 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#02 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#03 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+--------------------------------------------------PAGE-01-----------------------------------------------------
+#04 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#05 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#06 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#07 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+--------------------------------------------------PAGE-02-----------------------------------------------------
+#08 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#09 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#10 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#11 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+--------------------------------------------------OVERFLOW----------------------------------------------------
+--------------------------------------------------PAGE-00-----------------------------------------------------
+#00 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#01 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#02 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+#03 KEY: #####, MASS: #####, SPECIFIC_HEAT_CAPACITY: #####, TEMPERATURE_CHANGE: #####, OVERFLOW_POINTER: #####
+==============================================================================================================
+1. Load test operations from file
+2. Input operations from keyboard
+3. Exit
+> 
+    \end{lstlisting}
+
+    Jeżeli wybierzemy odczytaniu komend z pliku, to na koniec działania programu ponownie przedstawione zostaną zawartości plików, a także średnia liczba odcztów, zapisów.
+    Jeżeli wybierzemy opcję wczytywania komend z klawiatury, to będziemy musieli wpisywać je samodzielnie. Do sprawdzenia dostępnych komend używamy polecenia HELP:
+
+    \begin{lstlisting}[basicstyle=\ttfamily\fontsize{6}{8}\selectfont, breaklines=true]
+> HELP
+Available commands:
+HELP                                                      - print help
+INSERT key mass specific_heat_capacity temperature_change - insert a new record with a given key
+GET key                                                   - get a record with a given key
+REORGANISE                                                - reorganise current data and overflow
+SHOW                                                      - show the values of data and overflow
+EXIT                                                      - exit the program
+    \end{lstlisting}
+
+    Jak widać, do wyboru mamy takie polecenia jak: dodanie nowego rekordu (INSERT), pobranie rekordu z naszych plików (GET), wywołanie \texttt{reorganise} na życzenie (REORGANISE), a także pokazanie obecnego stanu plików (SHOW).
+    Program kończymy poleceniem EXIT, gdzie na koniec wypisane zostaną zawartości plików, a także liczba odczytów i zapisów.
+
+    \section*{Eksperyment}
+    \addcontentsline{toc}{section}{Eksperyment}
+
+
+    \subsection*{Wyniki liczbowe}
+    \addcontentsline{toc}{subsection}{Wyniki liczbowe}
+
+    Poniżej znajdują się rozmiary plików dla poszczególnych liczby rekordów, przy współczynniku alfa równym 0.5, oraz przy 10 rekordów na stronę. Rozmiary podane są w bajtach.
+    Liczba tworzonych stron typu \texttt{overflow} jest 4 razy mniejsza od stron typu \texttt{data}.
+    Jeden rekord zajmuje 25 B. Jeden indeks zajmuje 10 B.
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{cccccc}
+        \toprule
+        \textbf{N} & \textbf{Rozmiar indexes.txt} & \textbf{Rozmiar data.txt} & \textbf{Rozmiar overflow.txt} & \textbf{Suma rozmiarów} \\
+        \midrule
+        100  & 90   & 2250  & 1250  & 3590  \\
+        200  & 210  & 5250  & 2000  & 7460  \\
+        400  & 470  & 11750 & 3750  & 15970 \\
+        600  & 1020 & 25500 & 2000  & 28520 \\
+        800  & 1020 & 25500 & 6250  & 32770 \\
+        1000 & 1020 & 25500 & 10750 & 37270 \\
+        \bottomrule
+        \end{tabular}
+        \caption{Tabela z rozmiarami plików oraz ich sumami w zależności od ilości rekordów.}
+        \label{tab:sizes}
+    \end{table}
+
+    \noindent Wraz z wzrostem ilości rekordów rośnie rozmiar plików. Wzrost ten jest liniowy. \\
+
+    \noindent Do dalszego etapu eksperymentu wylosowałam 1000 operacji wstawiania rekordów.
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{ccccc}
+        \toprule
+        \textbf{Alpha} & \textbf{Rozmiar indexes.txt} & \textbf{Rozmiar data.txt} & \textbf{Rozmiar overflow.txt} & \textbf{Suma rozmiarów} \\
+        \midrule
+        0.2 & 2270 & 56750 & 9000  & 68020  \\
+        0.3 & 3160 & 79000 & 1000  & 83160  \\
+        0.4 & 2170 & 54250 & 2750  & 59170  \\
+        0.5 & 1310 & 32750 & 7250  & 41310  \\
+        0.6 & 1650 & 41250 & 500   & 43400  \\
+        0.7 & 1250 & 31250 & 3000  & 35500  \\
+        0.8 & 1070 & 26750 & 3500  & 31320  \\
+        \bottomrule
+        \end{tabular}
+        \caption{Rozmiary plików w zależności od współczynnika alfa.}
+        \label{tab:file_sizes}
+    \end{table}
+
+    \noindent Wraz z rosnącym alpha sumaryczna wielkość maleje. Jest tak ponieważ wtedy więcej rekordów mieści się w stronie i stron jest też mniej. 
+    Zatem będzie mniej pustych miejsc.
+                
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{cccc}
+        \toprule
+        \textbf{Alpha} & \textbf{Średnia zapisów} & \textbf{Średnia odczytów} & \textbf{Suma średnich} \\
+        \midrule
+        0.2 & 2.203990 & 4.117516 & 6.321506 \\
+        0.3 & 1.956785 & 1.706770 & 3.663555 \\
+        0.4 & 1.953079 & 2.453077 & 4.406156 \\
+        0.5 & 2.252881 & 3.885720 & 6.138601 \\
+        0.6 & 1.996107 & 1.831038 & 3.827145 \\
+        0.7 & 1.999977 & 2.007301 & 4.007278 \\
+        0.8 & 1.945320 & 3.382843 & 5.328163 \\
+        \bottomrule
+        \end{tabular}
+        \caption{Średnia liczba zapisów i odczytów w zależności od współczynnika alfa.}
+        \label{tab:average_operations}
+    \end{table}
+
+
+
+    \section*{Zakończenie}
+    \addcontentsline{toc}{section}{Zakończenie}
+
+    Wykonanie tego projektu pozowoliło mi zapoznać się z plikami indeksowo-sekwencyjnymi. W projekcie z powodzeniem osiągnięto cele, takie jak efektywne wstawianie, wyszukiwanie, reorganizacja oraz obsługa przepełnienia danych.
+   
+\end{document}
