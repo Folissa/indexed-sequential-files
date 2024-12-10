@@ -23,6 +23,7 @@ typedef struct {
     int number_of_records;
     int number_of_pages;
     int last_written_page_index;
+    int free_index;
 } data_t;
 
 // Create new data.

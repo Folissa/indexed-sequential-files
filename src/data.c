@@ -16,6 +16,7 @@ void initialize_data(data_t *data, char *filename, int number_of_pages) {
     data->number_of_records = 0;
     data->number_of_pages = number_of_pages;
     data->last_written_page_index = EMPTY_VALUE;
+    data->free_index = 0;
 }
 
 void destroy_data(data_t *data) {
@@ -300,7 +301,8 @@ int insert_record(indexes_t *indexes, data_t *data, data_t *overflow, record_t *
 }
 
 void add_to_overflow(data_t *data, data_t *overflow, int parent_record_index, record_t *child) {
-    int index_in_file = find_free_space(overflow);
+    int index_in_file = overflow->free_index;
+    (overflow->free_index)++;
     // Add record to the index_in_file
     int append_overflow = 1;
     // Update the pointer
@@ -552,6 +554,7 @@ void reorganise(indexes_t *indexes, data_t *data, data_t *overflow, double alpha
     data->number_of_records = processed_records;
     overflow->number_of_pages = temp_overflow->number_of_pages;
     overflow->number_of_records = 0;
+    overflow->free_index = 0;
     delete_file(DATA_FILENAME);
     delete_file(OVERFLOW_FILENAME);
     delete_file(INDEXES_FILENAME);
